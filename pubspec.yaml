@@ -1,0 +1,19 @@
+name: wheel_picker
+description: A value/time picking widget using input wheels. Customizable and light weight.
+homepage: https://github.com/stavgafny/wheel_picker
+version: 0.0.1
+
+environment:
+  sdk: '>=3.1.0 <4.0.0'
+  flutter: '>=1.17.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
