@@ -1,21 +1,27 @@
-import 'package:flutter/material.dart';
-import './wheel_picker_style.dart';
+part of './wheel_picker_controller.dart';
 
 class ItemWheelPicker<T> extends StatelessWidget {
   final List<T> children;
   final Widget Function(BuildContext context, T item, int index) builder;
-  final int initialIndex;
+  final WheelPickerController? controller;
+  final void Function(T item, int index)? onSelectedItemChanged;
   final bool looping;
   final WheelPickerStyle style;
 
   const ItemWheelPicker({
     required this.children,
     required this.builder,
-    this.initialIndex = 0,
+    this.controller,
+    this.onSelectedItemChanged,
     this.looping = true,
     this.style = WheelPickerStyle.defaultStyle,
     super.key,
-  });
+  }) : assert(children.length > 0);
+
+  void _onSelectedItemChanged(value) {
+    final relativeIndex = value % children.length;
+    onSelectedItemChanged?.call(children[relativeIndex], relativeIndex);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,6 +29,7 @@ class ItemWheelPicker<T> extends StatelessWidget {
   }
 
   Widget _repeating(BuildContext context) {
+    controller?._attach(children, looping);
     return SizedBox(
       width: style.width,
       height: style.height,
@@ -34,7 +41,8 @@ class ItemWheelPicker<T> extends StatelessWidget {
           },
         ),
         itemExtent: style.itemExtent,
-        controller: FixedExtentScrollController(initialItem: initialIndex),
+        controller: controller?._getScrollController(),
+        onSelectedItemChanged: _onSelectedItemChanged,
         physics: const FixedExtentScrollPhysics(),
         diameterRatio: style.diameterRatio,
         squeeze: style.squeeze,
@@ -45,13 +53,16 @@ class ItemWheelPicker<T> extends StatelessWidget {
   }
 
   Widget _nonRepeating(BuildContext context) {
+    controller?._attach(children, looping);
+
     int i = 0;
     return SizedBox(
       width: style.width,
       height: style.height,
       child: ListWheelScrollView(
         itemExtent: style.itemExtent,
-        controller: FixedExtentScrollController(initialItem: initialIndex),
+        controller: controller?._getScrollController(),
+        onSelectedItemChanged: _onSelectedItemChanged,
         physics: const FixedExtentScrollPhysics(),
         diameterRatio: style.diameterRatio,
         squeeze: style.squeeze,

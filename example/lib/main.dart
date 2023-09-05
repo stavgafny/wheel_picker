@@ -22,24 +22,27 @@ class MyApp extends StatelessWidget {
   }
 
   Widget _example() {
+    final c1 = WheelPickerController(initialIndex: 4);
+    final c2 = WheelPickerController(initialIndex: 4, mount: c1);
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         ItemWheelPicker(
-          children: alphabet,
+          children: List.generate(100, (index) => index),
           builder: (context, item, index) {
-            return Text("$item-$index");
+            return Text("${2000 + item}");
           },
-          initialIndex: 3,
+          controller: c1,
           looping: false,
+          onSelectedItemChanged: (item, index) {},
         ),
         ItemWheelPicker(
-          children: alphabet,
+          children: List.generate(12, (index) => index + 1),
           builder: (context, item, index) {
-            return Text("$item-$index");
+            return Text("$item".padLeft(2, '0'));
           },
-          initialIndex: 3,
-          looping: true,
+          controller: c2,
         ),
       ],
     );
