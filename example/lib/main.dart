@@ -22,27 +22,45 @@ class MyApp extends StatelessWidget {
   }
 
   Widget _example() {
-    final c1 = WheelPickerController(initialIndex: 4);
-    final c2 = WheelPickerController(initialIndex: 4, mount: c1);
+    final now = DateTime.now();
+    final yearController = WheelPickerController(
+      items: List.generate(100, (index) => index),
+      initialIndex: now.year % 2000,
+    );
+    final monthController = WheelPickerController(
+      items: List.generate(12, (index) => index + 1),
+      initialIndex: now.month - 1,
+      mount: yearController,
+    );
+
+    final dayController = WheelPickerController(
+      items: List.generate(30, (index) => index + 1),
+      initialIndex: now.day - 1,
+      mount: monthController,
+    );
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
+      textDirection: TextDirection.rtl,
       children: [
-        ItemWheelPicker(
-          children: List.generate(100, (index) => index),
+        WheelPicker(
           builder: (context, item, index) {
             return Text("${2000 + item}");
           },
-          controller: c1,
+          controller: yearController,
           looping: false,
-          onSelectedItemChanged: (item, index) {},
         ),
-        ItemWheelPicker(
-          children: List.generate(12, (index) => index + 1),
+        WheelPicker(
           builder: (context, item, index) {
             return Text("$item".padLeft(2, '0'));
           },
-          controller: c2,
+          controller: monthController,
+        ),
+        WheelPicker(
+          builder: (context, item, index) {
+            return Text("$item".padLeft(2, '0'));
+          },
+          controller: dayController,
         ),
       ],
     );
