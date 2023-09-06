@@ -27,31 +27,43 @@ class Example extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final yearController = WheelPickerController(
-      items: List.generate(100, (index) => index),
-      initialIndex: 0,
+    final now = TimeOfDay.now();
+    final c1 =
+        WheelPickerController(itemCount: 12, initialIndex: now.hour % 12);
+    final c2 = WheelPickerController(
+      itemCount: 60,
+      initialIndex: now.minute,
+      mount: c1,
     );
-    final monthController = WheelPickerController(
-      items: List.generate(12, (index) => index + 1),
-      initialIndex: 0,
-      mount: yearController,
-    );
+    const style = TextStyle(color: Colors.redAccent);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         WheelPicker(
-          builder: (context, item, index) {
-            return Text("${2000 + item}");
+          builder: (context, index) {
+            return Text("$index".padLeft(2, '0'), style: style);
           },
-          controller: yearController,
+          controller: c1,
           looping: false,
         ),
+        const Text(":", style: style),
         WheelPicker(
-          builder: (context, item, index) {
-            return Text("$item".padLeft(2, '0'));
+          builder: (context, index) {
+            return Text(
+              "$index".padLeft(2, '0'),
+              style: style,
+            );
           },
-          controller: monthController,
+          controller: c2,
+        ),
+        WheelPicker(
+          itemCount: 2,
+          builder: (context, index) {
+            return Text(["AM", "PM"][index]);
+          },
+          looping: false,
         ),
       ],
     );

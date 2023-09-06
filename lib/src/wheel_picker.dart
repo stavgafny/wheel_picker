@@ -1,42 +1,35 @@
 part of './wheel_picker_controller.dart';
 
-class WheelPicker<T> extends StatefulWidget {
-  final List<T>? items;
-  final Widget Function(BuildContext context, T item, int index) builder;
-  final WheelPickerController<T>? controller;
-  final void Function(T item, int index)? onSelectedItemChanged;
+class WheelPicker extends StatefulWidget {
+  final Widget Function(BuildContext context, int index) builder;
+  final int? itemCount;
+  final WheelPickerController? controller;
+  final void Function(int index)? onSelectedItemChanged;
   final bool looping;
   final WheelPickerStyle style;
 
   const WheelPicker({
-    this.items,
     required this.builder,
+    this.itemCount,
     this.controller,
     this.onSelectedItemChanged,
     this.looping = true,
     this.style = WheelPickerStyle.defaultStyle,
     super.key,
   })  : assert(
-          !(items == null && controller == null),
-          "Must have either items or a controller",
+          !(itemCount == null && controller == null),
+          "Must have either itemCount or a controller",
         ),
         assert(
-          !(items != null && controller != null),
-          "Can't have both items and controller",
+          !(itemCount != null && controller != null),
+          "Can't have both itemCount and controller. Try removing the itemCount to the controller",
         );
 
   @override
-  State<WheelPicker<T>> createState() => _WheelPickerState<T>();
+  State<WheelPicker> createState() => _WheelPickerState();
 }
 
-class _WheelPickerState<T> extends State<WheelPicker<T>> {
-  List<T> get _items => (widget.items ?? widget.controller?.items)!;
-
-  void _onSelectedItemChanged(value) {
-    final relativeIndex = value % _items.length;
-    widget.onSelectedItemChanged?.call(_items[relativeIndex], relativeIndex);
-  }
-
+class _WheelPickerState extends State<WheelPicker> {
   @override
   void initState() {
     widget.controller?._attach(widget.looping);
@@ -51,27 +44,25 @@ class _WheelPickerState<T> extends State<WheelPicker<T>> {
 
   @override
   Widget build(BuildContext context) {
+    final range = (widget.itemCount ?? widget.controller?.itemCount)!;
     return SizedBox(
       width: widget.style.width,
       height: widget.style.height,
-      child: _items.isNotEmpty
-          ? (widget.looping ? _repeating : _nonRepeating).call(context, _items)
+      child: range > 0
+          ? (widget.looping ? _loopingWheel : _nonLoopingWheel)
+              .call(context, range)
           : null,
     );
   }
 
-  Widget _repeating(BuildContext context, List<T> buildItems) {
+  Widget _loopingWheel(BuildContext context, int range) {
     return ListWheelScrollView.useDelegate(
-      childDelegate: ListWheelChildBuilderDelegate(
-        builder: (context, index) {
-          final relativeIndex = index % buildItems.length;
-          return widget.builder(
-              context, buildItems[relativeIndex], relativeIndex);
-        },
-      ),
       itemExtent: widget.style.itemExtent,
+      childDelegate: ListWheelChildBuilderDelegate(
+        builder: (context, index) => widget.builder(context, index % range),
+      ),
       controller: widget.controller?._getScrollController(),
-      onSelectedItemChanged: _onSelectedItemChanged,
+      onSelectedItemChanged: widget.onSelectedItemChanged,
       physics: const FixedExtentScrollPhysics(),
       diameterRatio: widget.style.diameterRatio,
       squeeze: widget.style.squeeze,
@@ -80,19 +71,17 @@ class _WheelPickerState<T> extends State<WheelPicker<T>> {
     );
   }
 
-  Widget _nonRepeating(BuildContext context, List<T> buildItems) {
-    int i = 0;
+  Widget _nonLoopingWheel(BuildContext context, int range) {
     return ListWheelScrollView(
       itemExtent: widget.style.itemExtent,
       controller: widget.controller?._getScrollController(),
-      onSelectedItemChanged: _onSelectedItemChanged,
+      onSelectedItemChanged: widget.onSelectedItemChanged,
       physics: const FixedExtentScrollPhysics(),
       diameterRatio: widget.style.diameterRatio,
       squeeze: widget.style.squeeze,
       overAndUnderCenterOpacity: widget.style.betweenItemOpacity,
       magnification: widget.style.magnification,
-      children:
-          buildItems.map((item) => widget.builder(context, item, i++)).toList(),
+      children: List.generate(range, (index) => widget.builder(context, index)),
     );
   }
 }

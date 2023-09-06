@@ -1,10 +1,10 @@
 class WheelPickerStyle {
   static const _defaultWidth = 50.0;
-  static const _defaultHeight = 120.0;
-  static const _defaultItemExtent = 30.0;
+  static const _defaultHeight = 150.0;
+  static const _defaultItemExtent = 20.0;
   static const _defaultDiameterRatio = 1.0;
   static const _defaultSqueeze = 1.5;
-  static const _defaultBetweenItemOpacity = .5;
+  static const _defaultBetweenItemOpacity = .25;
   static const _defaultMagnification = 1.25;
 
   static const defaultStyle = WheelPickerStyle();
