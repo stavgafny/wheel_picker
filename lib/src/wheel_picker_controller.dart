@@ -15,8 +15,9 @@ class PickedItem<T> {
 
 class WheelPickerController<T> {
   final List<T> items;
-  final int initialIndex;
+  int initialIndex;
   final WheelPickerController? mount;
+  final bool preserveIndex;
 
   _AttachedWheelPickerController? _attachment;
 
@@ -24,6 +25,7 @@ class WheelPickerController<T> {
     required this.items,
     this.initialIndex = 0,
     this.mount,
+    this.preserveIndex = false,
   });
 
   bool get isAttached => _attachment != null;
@@ -35,8 +37,6 @@ class WheelPickerController<T> {
     return PickedItem(item, index);
   }
 
-  void dispose() => _attachment?.dispose();
-
   FixedExtentScrollController? _getScrollController() =>
       _attachment?._controller;
 
@@ -47,7 +47,17 @@ class WheelPickerController<T> {
       looping,
       mount?._attachment,
       initialIndex,
+      preserveIndex,
     );
+  }
+
+  void _disposeAttachment() {
+    final lastIndex = _attachment?._lastIndex;
+    _attachment?.dispose();
+    _attachment = null;
+    if (lastIndex != null) {
+      initialIndex = lastIndex;
+    }
   }
 }
 
@@ -57,6 +67,7 @@ class _AttachedWheelPickerController<T> {
   final _AttachedWheelPickerController? attachedMount;
 
   int _previousCycle = 0;
+  int? _lastIndex;
 
   final FixedExtentScrollController _controller;
   _AttachedWheelPickerController(
@@ -64,7 +75,11 @@ class _AttachedWheelPickerController<T> {
     this.looping,
     this.attachedMount,
     int initialIndex,
+    bool preserveIndex,
   ) : _controller = FixedExtentScrollController(initialItem: initialIndex) {
+    if (preserveIndex) {
+      _controller.addListener(_onUpdatePreserveIndex);
+    }
     if (looping && attachedMount != null) {
       _controller.addListener(_onLoopShiftMount);
     }
@@ -83,6 +98,10 @@ class _AttachedWheelPickerController<T> {
           : attachedMount?._shiftUp();
       _previousCycle = currentCycle;
     }
+  }
+
+  void _onUpdatePreserveIndex() {
+    _lastIndex = _controller.selectedItem % _range;
   }
 
   void _animateFromCurrent(int step) {
@@ -110,6 +129,7 @@ class _AttachedWheelPickerController<T> {
   T? getCurrentItem() => items.elementAtOrNull(getCurrentIndex() ?? _range);
 
   void dispose() {
+    _controller.removeListener(_onUpdatePreserveIndex);
     _controller.removeListener(_onLoopShiftMount);
     _controller.dispose();
   }

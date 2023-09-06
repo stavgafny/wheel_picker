@@ -1,6 +1,6 @@
 part of './wheel_picker_controller.dart';
 
-class WheelPicker<T> extends StatelessWidget {
+class WheelPicker<T> extends StatefulWidget {
   final List<T>? items;
   final Widget Function(BuildContext context, T item, int index) builder;
   final WheelPickerController<T>? controller;
@@ -25,21 +25,37 @@ class WheelPicker<T> extends StatelessWidget {
           "Can't have both items and controller",
         );
 
-  List<T> get _items => (items ?? controller?.items)!;
+  @override
+  State<WheelPicker<T>> createState() => _WheelPickerState<T>();
+}
+
+class _WheelPickerState<T> extends State<WheelPicker<T>> {
+  List<T> get _items => (widget.items ?? widget.controller?.items)!;
 
   void _onSelectedItemChanged(value) {
     final relativeIndex = value % _items.length;
-    onSelectedItemChanged?.call(_items[relativeIndex], relativeIndex);
+    widget.onSelectedItemChanged?.call(_items[relativeIndex], relativeIndex);
+  }
+
+  @override
+  void initState() {
+    widget.controller?._attach(widget.looping);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    widget.controller?._disposeAttachment();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    controller?._attach(looping);
     return SizedBox(
-      width: style.width,
-      height: style.height,
+      width: widget.style.width,
+      height: widget.style.height,
       child: _items.isNotEmpty
-          ? (looping ? _repeating : _nonRepeating).call(context, _items)
+          ? (widget.looping ? _repeating : _nonRepeating).call(context, _items)
           : null,
     );
   }
@@ -49,32 +65,34 @@ class WheelPicker<T> extends StatelessWidget {
       childDelegate: ListWheelChildBuilderDelegate(
         builder: (context, index) {
           final relativeIndex = index % buildItems.length;
-          return builder(context, buildItems[relativeIndex], relativeIndex);
+          return widget.builder(
+              context, buildItems[relativeIndex], relativeIndex);
         },
       ),
-      itemExtent: style.itemExtent,
-      controller: controller?._getScrollController(),
+      itemExtent: widget.style.itemExtent,
+      controller: widget.controller?._getScrollController(),
       onSelectedItemChanged: _onSelectedItemChanged,
       physics: const FixedExtentScrollPhysics(),
-      diameterRatio: style.diameterRatio,
-      squeeze: style.squeeze,
-      overAndUnderCenterOpacity: style.betweenItemOpacity,
-      magnification: style.magnification,
+      diameterRatio: widget.style.diameterRatio,
+      squeeze: widget.style.squeeze,
+      overAndUnderCenterOpacity: widget.style.betweenItemOpacity,
+      magnification: widget.style.magnification,
     );
   }
 
   Widget _nonRepeating(BuildContext context, List<T> buildItems) {
     int i = 0;
     return ListWheelScrollView(
-      itemExtent: style.itemExtent,
-      controller: controller?._getScrollController(),
+      itemExtent: widget.style.itemExtent,
+      controller: widget.controller?._getScrollController(),
       onSelectedItemChanged: _onSelectedItemChanged,
       physics: const FixedExtentScrollPhysics(),
-      diameterRatio: style.diameterRatio,
-      squeeze: style.squeeze,
-      overAndUnderCenterOpacity: style.betweenItemOpacity,
-      magnification: style.magnification,
-      children: buildItems.map((item) => builder(context, item, i++)).toList(),
+      diameterRatio: widget.style.diameterRatio,
+      squeeze: widget.style.squeeze,
+      overAndUnderCenterOpacity: widget.style.betweenItemOpacity,
+      magnification: widget.style.magnification,
+      children:
+          buildItems.map((item) => widget.builder(context, item, i++)).toList(),
     );
   }
 }

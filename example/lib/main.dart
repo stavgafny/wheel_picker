@@ -13,35 +13,47 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Example',
       theme: ThemeData.dark(useMaterial3: true),
-      home: Scaffold(
+      home: const Scaffold(
         body: Center(
-          child: _example(),
+          child: Example(),
         ),
       ),
     );
   }
+}
 
-  Widget _example() {
-    final now = DateTime.now();
-    final yearController = WheelPickerController(
+class Example extends StatefulWidget {
+  const Example({super.key});
+
+  @override
+  State<Example> createState() => _ExampleState();
+}
+
+class _ExampleState extends State<Example> {
+  late final WheelPickerController yearController;
+  late final WheelPickerController monthController;
+
+  bool _visible = true;
+
+  @override
+  void initState() {
+    yearController = WheelPickerController(
       items: List.generate(100, (index) => index),
-      initialIndex: now.year % 2000,
+      initialIndex: 0,
     );
-    final monthController = WheelPickerController(
+    monthController = WheelPickerController(
       items: List.generate(12, (index) => index + 1),
-      initialIndex: now.month - 1,
+      initialIndex: 0,
       mount: yearController,
+      preserveIndex: true,
     );
+    super.initState();
+  }
 
-    final dayController = WheelPickerController(
-      items: List.generate(30, (index) => index + 1),
-      initialIndex: now.day - 1,
-      mount: monthController,
-    );
-
+  @override
+  Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      textDirection: TextDirection.rtl,
       children: [
         WheelPicker(
           builder: (context, item, index) {
@@ -50,18 +62,22 @@ class MyApp extends StatelessWidget {
           controller: yearController,
           looping: false,
         ),
-        WheelPicker(
-          builder: (context, item, index) {
-            return Text("$item".padLeft(2, '0'));
+        _visible
+            ? WheelPicker(
+                builder: (context, item, index) {
+                  return Text("$item".padLeft(2, '0'));
+                },
+                controller: monthController,
+              )
+            : const SizedBox(),
+        ElevatedButton(
+          onPressed: () {
+            setState(() {
+              _visible = !_visible;
+            });
           },
-          controller: monthController,
-        ),
-        WheelPicker(
-          builder: (context, item, index) {
-            return Text("$item".padLeft(2, '0'));
-          },
-          controller: dayController,
-        ),
+          child: Text(_visible ? "remove" : "add"),
+        )
       ],
     );
   }
