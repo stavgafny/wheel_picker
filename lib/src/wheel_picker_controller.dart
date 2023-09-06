@@ -42,6 +42,8 @@ class WheelPickerController<T> {
 
   void _attach(bool looping) {
     assert(!isAttached, "controller can't have multiple attachments");
+    assert(mount?.isAttached != false,
+        "mounted controller must be attached before attaching, try arranging the order in which they are built");
     _attachment = _AttachedWheelPickerController<T>(
       items,
       looping,

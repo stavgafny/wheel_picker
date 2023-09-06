@@ -22,36 +22,21 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class Example extends StatefulWidget {
+class Example extends StatelessWidget {
   const Example({super.key});
 
   @override
-  State<Example> createState() => _ExampleState();
-}
-
-class _ExampleState extends State<Example> {
-  late final WheelPickerController yearController;
-  late final WheelPickerController monthController;
-
-  bool _visible = true;
-
-  @override
-  void initState() {
-    yearController = WheelPickerController(
+  Widget build(BuildContext context) {
+    final yearController = WheelPickerController(
       items: List.generate(100, (index) => index),
       initialIndex: 0,
     );
-    monthController = WheelPickerController(
+    final monthController = WheelPickerController(
       items: List.generate(12, (index) => index + 1),
       initialIndex: 0,
       mount: yearController,
-      preserveIndex: true,
     );
-    super.initState();
-  }
 
-  @override
-  Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -62,22 +47,12 @@ class _ExampleState extends State<Example> {
           controller: yearController,
           looping: false,
         ),
-        _visible
-            ? WheelPicker(
-                builder: (context, item, index) {
-                  return Text("$item".padLeft(2, '0'));
-                },
-                controller: monthController,
-              )
-            : const SizedBox(),
-        ElevatedButton(
-          onPressed: () {
-            setState(() {
-              _visible = !_visible;
-            });
+        WheelPicker(
+          builder: (context, item, index) {
+            return Text("$item".padLeft(2, '0'));
           },
-          child: Text(_visible ? "remove" : "add"),
-        )
+          controller: monthController,
+        ),
       ],
     );
   }
