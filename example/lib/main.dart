@@ -33,7 +33,7 @@ class Example extends StatelessWidget {
     final c2 = WheelPickerController(
       itemCount: 60,
       initialIndex: now.minute,
-      mount: c1,
+      mounts: [c1],
     );
     const style = TextStyle(color: Colors.redAccent);
 
@@ -92,5 +92,3 @@ class Example extends StatelessWidget {
     );
   }
 }
-
-final alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');

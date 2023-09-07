@@ -6,108 +6,85 @@ part './wheel_picker.dart';
 class WheelPickerController {
   final int itemCount;
   final int initialIndex;
-  final WheelPickerController? mount;
 
+  final List<WheelPickerController> _mounts;
   final FixedExtentScrollController _scrollController;
-  _WheelPickerControllerAttachment? _attachment;
+  int _current;
+  int _previousCycle = 0;
+  bool _looping = true;
 
   WheelPickerController({
     required this.itemCount,
     this.initialIndex = 0,
-    this.mount,
-  }) : _scrollController =
-            FixedExtentScrollController(initialItem: initialIndex);
+    List<WheelPickerController>? mounts,
+  })  : _mounts = mounts ?? [],
+        _scrollController =
+            FixedExtentScrollController(initialItem: initialIndex),
+        _current = initialIndex;
 
-  bool get isAttached => _attachment != null;
-
-  int get selected => _attachment?.getCurrent() ?? -1;
-
-  Future<int> shiftUp() async {
-    await _attachment?._shiftUp();
-    return selected;
-  }
-
-  Future<int> shiftDown() async {
-    await _attachment?._shiftDown();
-    return selected;
-  }
-
-  FixedExtentScrollController? _getScrollController() =>
-      _attachment?._controller;
+  bool get _hasClients => _scrollController.hasClients;
 
   void _attach(bool looping) {
-    assert(!isAttached, "controller can't have multiple attachments");
-    assert(mount?.isAttached != false,
-        "mounted controller must be attached before attaching, try arranging the order in which they are built");
-    _attachment = _WheelPickerControllerAttachment(
-      _scrollController,
-      itemCount,
-      looping,
-      mount?._attachment,
-    );
+    _looping = looping;
   }
 
-  void dispose() {
-    _attachment?.disposeAttachment();
-    _scrollController.dispose();
-  }
-}
-
-class _WheelPickerControllerAttachment {
-  final int itemCount;
-  final bool looping;
-  final _WheelPickerControllerAttachment? attachedMount;
-
-  int _previousCycle = 0;
-
-  final FixedExtentScrollController _controller;
-
-  _WheelPickerControllerAttachment(
-    this._controller,
-    this.itemCount,
-    this.looping,
-    this.attachedMount,
-  ) {
-    if (looping && attachedMount != null) {
-      _controller.addListener(_onLoopShiftMount);
-    }
-  }
-
-  bool get _hasClients => _controller.hasClients;
-
-  void _onLoopShiftMount() {
+  void _update(int value) {
     if (!_hasClients) return;
-    final currentCycle = (_controller.selectedItem / itemCount).floor();
-    if (currentCycle != _previousCycle) {
-      currentCycle > _previousCycle
-          ? attachedMount?._shiftDown()
-          : attachedMount?._shiftUp();
+    _current = value % itemCount;
+    final currentCycle = (value / itemCount).floor();
+    if (_previousCycle != currentCycle) {
+      final step = currentCycle > _previousCycle
+          ? VerticalDirection.down
+          : VerticalDirection.up;
+      _shiftMounts(step);
       _previousCycle = currentCycle;
     }
   }
 
-  Future<void> _shiftUp() async {
-    if (!looping && _controller.selectedItem == 0) return; //! Edge
-    return await _animateFromCurrent(-1);
+  void _shiftMounts(VerticalDirection direction) {
+    if (direction == VerticalDirection.down) {
+      for (final mount in _mounts) {
+        mount.shiftDown();
+      }
+    } else {
+      for (final mount in _mounts) {
+        mount.shiftUp();
+      }
+    }
   }
 
-  Future<void> _shiftDown() async {
-    if (!looping && _controller.selectedItem == itemCount - 1) return; //! Edge
-    return await _animateFromCurrent(1);
-  }
-
-  Future<void> _animateFromCurrent(int step) async {
+  Future<void> shiftUp() async {
     if (!_hasClients) return;
-    return await _controller.animateToItem(
-      _controller.selectedItem + step,
-      duration: const Duration(milliseconds: 250),
-      curve: Curves.easeInOut,
-    );
+    //! Edge
+    if (!_looping && _scrollController.selectedItem == 0) return;
+    return await _shiftController(this, -1);
   }
 
-  int? getCurrent() => _hasClients ? _controller.selectedItem : null;
-
-  void disposeAttachment() {
-    _controller.removeListener(_onLoopShiftMount);
+  Future<void> shiftDown() async {
+    if (!_hasClients) return;
+    //! Edge
+    if (!_looping && _scrollController.selectedItem == itemCount - 1) return;
+    return await _shiftController(this, 1);
   }
+
+  Future<void> shiftBy({required int steps}) async {
+    if (!_hasClients) return;
+    return await _shiftController(this, steps);
+  }
+
+  int getCurrent() => _hasClients ? _current : -1;
+
+  void dispose() => _scrollController.dispose();
+}
+
+Future<void> _shiftController(
+  WheelPickerController controller,
+  int steps,
+) async {
+  if (!controller._hasClients) return;
+  return await controller._scrollController.animateToItem(
+    controller._scrollController.selectedItem + steps,
+    duration: const Duration(milliseconds: 250),
+    curve: Curves.easeInOut,
+  );
 }
