@@ -12,6 +12,7 @@ class WheelPickerController {
   int _current;
   int _previousCycle = 0;
   bool _looping = true;
+  WheelShiftStyle _shiftStyle = WheelPickerStyle.defaultStyle.shiftStyle;
 
   WheelPickerController({
     required this.itemCount,
@@ -24,14 +25,15 @@ class WheelPickerController {
 
   bool get _hasClients => _scrollController.hasClients;
 
-  void _attach(bool looping) {
+  void _attach(bool looping, WheelShiftStyle shiftStyle) {
     _looping = looping;
+    _shiftStyle = shiftStyle;
   }
 
-  void _update(int value) {
+  void _update(int index) {
     if (!_hasClients) return;
-    _current = value % itemCount;
-    final currentCycle = (value / itemCount).floor();
+    _current = index % itemCount;
+    final currentCycle = (index / itemCount).floor();
     if (_previousCycle != currentCycle) {
       final step = currentCycle > _previousCycle
           ? VerticalDirection.down
@@ -57,19 +59,19 @@ class WheelPickerController {
     if (!_hasClients) return;
     //! Edge
     if (!_looping && _scrollController.selectedItem == 0) return;
-    return await _shiftController(this, -1);
+    return await _shiftController(this, -1, _shiftStyle);
   }
 
   Future<void> shiftDown() async {
     if (!_hasClients) return;
     //! Edge
     if (!_looping && _scrollController.selectedItem == itemCount - 1) return;
-    return await _shiftController(this, 1);
+    return await _shiftController(this, 1, _shiftStyle);
   }
 
   Future<void> shiftBy({required int steps}) async {
     if (!_hasClients) return;
-    return await _shiftController(this, steps);
+    return await _shiftController(this, steps, _shiftStyle);
   }
 
   int getCurrent() => _hasClients ? _current : -1;
@@ -80,11 +82,12 @@ class WheelPickerController {
 Future<void> _shiftController(
   WheelPickerController controller,
   int steps,
+  WheelShiftStyle shiftStyle,
 ) async {
   if (!controller._hasClients) return;
   return await controller._scrollController.animateToItem(
     controller._scrollController.selectedItem + steps,
-    duration: const Duration(milliseconds: 250),
-    curve: Curves.easeInOut,
+    duration: shiftStyle.duration,
+    curve: shiftStyle.curve,
   );
 }

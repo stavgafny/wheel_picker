@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class WheelPickerStyle {
   static const _defaultWidth = 50.0;
   static const _defaultHeight = 150.0;
@@ -6,6 +8,10 @@ class WheelPickerStyle {
   static const _defaultSqueeze = 1.0;
   static const _defaultBetweenItemOpacity = .25;
   static const _defaultMagnification = 1.25;
+  static const _defaultShiftStyle = WheelShiftStyle(
+    duration: Duration(milliseconds: 200),
+    curve: Curves.decelerate,
+  );
 
   static const defaultStyle = WheelPickerStyle();
 
@@ -16,6 +22,7 @@ class WheelPickerStyle {
   final double squeeze;
   final double betweenItemOpacity;
   final double magnification;
+  final WheelShiftStyle shiftStyle;
 
   const WheelPickerStyle({
     this.width = _defaultWidth,
@@ -25,6 +32,7 @@ class WheelPickerStyle {
     this.squeeze = _defaultSqueeze,
     this.betweenItemOpacity = _defaultBetweenItemOpacity,
     this.magnification = _defaultMagnification,
+    this.shiftStyle = _defaultShiftStyle,
   })  : assert(itemExtent > 0),
         assert(squeeze > 0),
         assert(betweenItemOpacity >= 0 && betweenItemOpacity <= 1),
@@ -38,6 +46,7 @@ class WheelPickerStyle {
     double? squeeze,
     double? betweenItemOpacity,
     double? magnification,
+    WheelShiftStyle? shiftStyle,
   }) {
     return WheelPickerStyle(
       width: width ?? this.width,
@@ -47,6 +56,31 @@ class WheelPickerStyle {
       squeeze: squeeze ?? this.squeeze,
       betweenItemOpacity: betweenItemOpacity ?? this.betweenItemOpacity,
       magnification: magnification ?? this.magnification,
+      shiftStyle: shiftStyle ?? this.shiftStyle,
     );
   }
+
+  @override
+  String toString() {
+    return 'WheelPickerStyle(width: $width, height: $height, itemExtent: $itemExtent, diameterRatio: $diameterRatio, squeeze: $squeeze, betweenItemOpacity: $betweenItemOpacity, magnification: $magnification)';
+  }
+}
+
+class WheelShiftStyle {
+  final Duration duration;
+  final Curve curve;
+  const WheelShiftStyle({required this.duration, required this.curve});
+
+  WheelShiftStyle copyWith({
+    Duration? duration,
+    Curve? curve,
+  }) {
+    return WheelShiftStyle(
+      duration: duration ?? this.duration,
+      curve: curve ?? this.curve,
+    );
+  }
+
+  @override
+  String toString() => 'WheelShiftStyle(duration: $duration, curve: $curve)';
 }

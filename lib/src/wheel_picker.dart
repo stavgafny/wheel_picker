@@ -5,9 +5,10 @@ class WheelPicker extends StatefulWidget {
   final int? itemCount;
   final WheelPickerController? controller;
   final int? initialIndex;
-  final Widget Function(BuildContext context, int index)? selectBuilder;
+  final Widget Function(BuildContext context, int index)? selectedIndexBuilder;
   final bool looping;
-  final void Function(int index)? onSelectedItemChanged;
+  final bool enableTap;
+  final void Function(int index)? onIndexChanged;
   final WheelPickerStyle style;
 
   const WheelPicker({
@@ -15,9 +16,10 @@ class WheelPicker extends StatefulWidget {
     this.itemCount,
     this.controller,
     this.initialIndex,
-    this.selectBuilder,
+    this.selectedIndexBuilder,
     this.looping = true,
-    this.onSelectedItemChanged,
+    this.enableTap = true,
+    this.onIndexChanged,
     this.style = WheelPickerStyle.defaultStyle,
     super.key,
   })  : assert(
@@ -39,19 +41,32 @@ class WheelPicker extends StatefulWidget {
 
 class _WheelPickerState extends State<WheelPicker> {
   int? _current;
+  late WheelPickerController _controller;
 
   @override
   void initState() {
-    widget.controller?._attach(widget.looping);
-    if (widget.selectBuilder != null) {
-      _current = widget.controller?.initialIndex ?? 0;
+    _controller = widget.controller ??
+        WheelPickerController(
+          itemCount: widget.itemCount!,
+          initialIndex: widget.initialIndex ?? 0,
+        );
+
+    _controller._attach(widget.looping, widget.style.shiftStyle);
+    if (widget.selectedIndexBuilder != null) {
+      _current = _controller.initialIndex;
     }
     super.initState();
   }
 
   @override
+  void didUpdateWidget(covariant WheelPicker oldWidget) {
+    _controller._attach(widget.looping, widget.style.shiftStyle);
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final range = (widget.itemCount ?? widget.controller?.itemCount)!;
+    final range = (widget.itemCount ?? _controller.itemCount);
     if (range <= 0) {
       return SizedBox(width: widget.style.width, height: widget.style.height);
     }
@@ -63,7 +78,8 @@ class _WheelPickerState extends State<WheelPicker> {
     return SizedBox(
       width: widget.style.width,
       height: widget.style.height,
-      child: wheel,
+      child:
+          widget.enableTap == true ? _wrapWithTapDetects(wheel: wheel) : wheel,
     );
   }
 
@@ -73,8 +89,8 @@ class _WheelPickerState extends State<WheelPicker> {
       childDelegate: ListWheelChildBuilderDelegate(
         builder: _loopingItemBuilderFactory(range),
       ),
-      controller: widget.controller?._scrollController,
-      onSelectedItemChanged: _onSelectedItemChangedFactory(range),
+      controller: _controller._scrollController,
+      onSelectedItemChanged: _onIndexChangedFactory(range),
       physics: const FixedExtentScrollPhysics(),
       diameterRatio: widget.style.diameterRatio,
       squeeze: widget.style.squeeze,
@@ -86,8 +102,8 @@ class _WheelPickerState extends State<WheelPicker> {
   Widget _nonLoopingWheel(BuildContext context, int range) {
     return ListWheelScrollView(
       itemExtent: widget.style.itemExtent,
-      controller: widget.controller?._scrollController,
-      onSelectedItemChanged: _onSelectedItemChangedFactory(range),
+      controller: _controller._scrollController,
+      onSelectedItemChanged: _onIndexChangedFactory(range),
       physics: const FixedExtentScrollPhysics(),
       diameterRatio: widget.style.diameterRatio,
       squeeze: widget.style.squeeze,
@@ -98,41 +114,57 @@ class _WheelPickerState extends State<WheelPicker> {
   }
 
   Widget Function(BuildContext, int) _loopingItemBuilderFactory(int range) {
-    return (widget.selectBuilder == null)
+    return (widget.selectedIndexBuilder == null)
         ? (context, index) => widget.builder(context, index % range)
         : (context, index) {
             final relativeIndex = index % range;
             final builder = (_current == relativeIndex)
-                ? widget.selectBuilder!
+                ? widget.selectedIndexBuilder!
                 : widget.builder;
             return builder(context, relativeIndex);
           };
   }
 
   Widget Function(int) _nonLoopingItemBuilderFactory(int range) {
-    return (widget.selectBuilder == null)
+    return (widget.selectedIndexBuilder == null)
         ? (index) => widget.builder(context, index)
         : (index) {
             final relativeIndex = index % range;
             final builder = (_current == relativeIndex)
-                ? widget.selectBuilder!
+                ? widget.selectedIndexBuilder!
                 : widget.builder;
             return builder(context, relativeIndex);
           };
   }
 
-  void Function(int)? _onSelectedItemChangedFactory(int range) {
-    if (widget.selectBuilder == null) {
-      return (int value) {
-        widget.controller?._update(value);
-        widget.onSelectedItemChanged?.call(value % range);
+  void Function(int)? _onIndexChangedFactory(int range) {
+    if (widget.selectedIndexBuilder == null) {
+      return (int index) {
+        _controller._update(index);
+        widget.onIndexChanged?.call(index % range);
       };
     } else {
-      return (int value) {
-        widget.controller?._update(value);
-        setState(() => _current = value % range);
-        widget.onSelectedItemChanged?.call(_current!);
+      return (int index) {
+        _controller._update(index);
+        setState(() => _current = index % range);
+        widget.onIndexChanged?.call(_current!);
       };
     }
+  }
+
+  Widget _wrapWithTapDetects({required Widget wheel}) {
+    final viewHeight = widget.style.height;
+    final itemHeightRatio = widget.style.itemExtent / viewHeight;
+    return GestureDetector(
+      onTapUp: (details) {
+        final tapLocation = (details.localPosition.dy / viewHeight) - .5;
+        if (tapLocation > itemHeightRatio) {
+          _controller.shiftDown();
+        } else if (tapLocation < -itemHeightRatio) {
+          _controller.shiftUp();
+        }
+      },
+      child: wheel,
+    );
   }
 }
