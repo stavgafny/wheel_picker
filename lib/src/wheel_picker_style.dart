@@ -29,4 +29,24 @@ class WheelPickerStyle {
         assert(squeeze > 0),
         assert(betweenItemOpacity >= 0 && betweenItemOpacity <= 1),
         assert(magnification > 0);
+
+  WheelPickerStyle copyWith({
+    double? width,
+    double? height,
+    double? itemExtent,
+    double? diameterRatio,
+    double? squeeze,
+    double? betweenItemOpacity,
+    double? magnification,
+  }) {
+    return WheelPickerStyle(
+      width: width ?? this.width,
+      height: height ?? this.height,
+      itemExtent: itemExtent ?? this.itemExtent,
+      diameterRatio: diameterRatio ?? this.diameterRatio,
+      squeeze: squeeze ?? this.squeeze,
+      betweenItemOpacity: betweenItemOpacity ?? this.betweenItemOpacity,
+      magnification: magnification ?? this.magnification,
+    );
+  }
 }

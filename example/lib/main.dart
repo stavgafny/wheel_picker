@@ -37,35 +37,58 @@ class Example extends StatelessWidget {
     );
     const style = TextStyle(color: Colors.redAccent);
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
+    Widget buildItem(BuildContext context, int index) {
+      return Text("$index".padLeft(2, '0'));
+    }
+
+    Widget buildSelectedItem(BuildContext context, int index) {
+      return Text("$index".padLeft(2, '0'), style: style);
+    }
+
+    return Stack(
+      fit: StackFit.expand,
       children: [
-        WheelPicker(
-          builder: (context, index) {
-            return Text("$index".padLeft(2, '0'), style: style);
-          },
-          controller: c1,
-          looping: false,
-        ),
-        const Text(":", style: style),
-        WheelPicker(
-          builder: (context, index) {
-            return Text(
-              "$index".padLeft(2, '0'),
-              style: style,
-            );
-          },
-          controller: c2,
-        ),
-        WheelPicker(
-          itemCount: 2,
-          builder: (context, index) {
-            return Text(["AM", "PM"][index]);
-          },
-          looping: false,
+        _centerBar(context),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            WheelPicker(
+              builder: buildItem,
+              selectBuilder: buildSelectedItem,
+              controller: c1,
+              looping: false,
+            ),
+            const Text(":", style: style),
+            WheelPicker(
+              builder: buildItem,
+              selectBuilder: buildSelectedItem,
+              controller: c2,
+            ),
+            WheelPicker(
+              itemCount: 2,
+              builder: (context, index) {
+                return Text(["AM", "PM"][index]);
+              },
+              looping: false,
+              style: WheelPickerStyle.defaultStyle.copyWith(magnification: 1.5),
+            ),
+          ],
         ),
       ],
+    );
+  }
+
+  Widget _centerBar(BuildContext context) {
+    return Center(
+      child: Container(
+        width: 200.0,
+        height: 24.0,
+        decoration: BoxDecoration(
+          color: const Color(0xFFC3C9FA).withAlpha(26),
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+      ),
     );
   }
 }

@@ -33,6 +33,8 @@ class WheelPickerController {
     );
   }
 
+  int get selected => _attachment?.getCurrent() ?? -1;
+
   void _disposeAttachment() {
     _attachment?.dispose();
     _attachment = null;
@@ -90,6 +92,8 @@ class _AttachedWheelPickerController {
       curve: Curves.easeInOut,
     );
   }
+
+  int getCurrent() => _hasClients ? _controller.initialItem : -1;
 
   void dispose() {
     _controller.removeListener(_onLoopShiftMount);
