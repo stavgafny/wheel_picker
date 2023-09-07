@@ -45,7 +45,7 @@ class _WheelPickerState extends State<WheelPicker> {
 
   @override
   void dispose() {
-    widget.controller?._disposeAttachment();
+    widget.controller?._attachment?.disposeAttachment();
     super.dispose();
   }
 
@@ -55,6 +55,30 @@ class _WheelPickerState extends State<WheelPicker> {
       setState(() => current = index % range);
       widget.onSelectedItemChanged?.call(index);
     };
+  }
+
+  Widget Function(BuildContext, int) _loopingItemBuilderFactory(int range) {
+    return (widget.selectBuilder == null)
+        ? (context, index) => widget.builder(context, index % range)
+        : (context, index) {
+            final relativeIndex = index % range;
+            final builder = (current == relativeIndex)
+                ? widget.selectBuilder!
+                : widget.builder;
+            return builder(context, relativeIndex);
+          };
+  }
+
+  Widget Function(int) _nonLoopingItemBuilderFactory(int range) {
+    return (widget.selectBuilder == null)
+        ? (index) => widget.builder(context, index)
+        : (index) {
+            final relativeIndex = index % range;
+            final builder = (current == relativeIndex)
+                ? widget.selectBuilder!
+                : widget.builder;
+            return builder(context, relativeIndex);
+          };
   }
 
   @override
@@ -74,15 +98,7 @@ class _WheelPickerState extends State<WheelPicker> {
     return ListWheelScrollView.useDelegate(
       itemExtent: widget.style.itemExtent,
       childDelegate: ListWheelChildBuilderDelegate(
-        builder: widget.selectBuilder == null
-            ? (context, index) => widget.builder(context, index % range)
-            : (context, index) {
-                final relativeIndex = index % range;
-                final builder = (current == relativeIndex)
-                    ? widget.selectBuilder!
-                    : widget.builder;
-                return builder(context, relativeIndex);
-              },
+        builder: _loopingItemBuilderFactory(range),
       ),
       controller: widget.controller?._getScrollController(),
       onSelectedItemChanged: _onSelectedItemChangedFactory(range),
@@ -104,17 +120,7 @@ class _WheelPickerState extends State<WheelPicker> {
       squeeze: widget.style.squeeze,
       overAndUnderCenterOpacity: widget.style.betweenItemOpacity,
       magnification: widget.style.magnification,
-      children: List.generate(
-          range,
-          widget.selectBuilder == null
-              ? (index) => widget.builder(context, index)
-              : (index) {
-                  final relativeIndex = index % range;
-                  final builder = (current == relativeIndex)
-                      ? widget.selectBuilder!
-                      : widget.builder;
-                  return builder(context, relativeIndex);
-                }),
+      children: List.generate(range, _nonLoopingItemBuilderFactory(range)),
     );
   }
 }

@@ -5,57 +5,69 @@ part './wheel_picker.dart';
 
 class WheelPickerController {
   final int itemCount;
-  int initialIndex;
+  final int initialIndex;
   final WheelPickerController? mount;
 
-  _AttachedWheelPickerController? _attachment;
+  final FixedExtentScrollController _scrollController;
+  _WheelPickerControllerAttachment? _attachment;
 
   WheelPickerController({
     required this.itemCount,
     this.initialIndex = 0,
     this.mount,
-  });
+  }) : _scrollController =
+            FixedExtentScrollController(initialItem: initialIndex);
 
-  bool get _isAttached => _attachment != null;
+  bool get isAttached => _attachment != null;
+
+  int get selected => _attachment?.getCurrent() ?? -1;
+
+  Future<int> shiftUp() async {
+    await _attachment?._shiftUp();
+    return selected;
+  }
+
+  Future<int> shiftDown() async {
+    await _attachment?._shiftDown();
+    return selected;
+  }
 
   FixedExtentScrollController? _getScrollController() =>
       _attachment?._controller;
 
   void _attach(bool looping) {
-    assert(!_isAttached, "controller can't have multiple attachments");
-    assert(mount?._isAttached != false,
+    assert(!isAttached, "controller can't have multiple attachments");
+    assert(mount?.isAttached != false,
         "mounted controller must be attached before attaching, try arranging the order in which they are built");
-    _attachment = _AttachedWheelPickerController(
+    _attachment = _WheelPickerControllerAttachment(
+      _scrollController,
       itemCount,
       looping,
       mount?._attachment,
-      initialIndex,
     );
   }
 
-  int get selected => _attachment?.getCurrent() ?? -1;
-
-  void _disposeAttachment() {
-    _attachment?.dispose();
-    _attachment = null;
+  void dispose() {
+    _attachment?.disposeAttachment();
+    _scrollController.dispose();
   }
 }
 
-class _AttachedWheelPickerController {
+class _WheelPickerControllerAttachment {
   final int itemCount;
   final bool looping;
-  final _AttachedWheelPickerController? attachedMount;
+  final _WheelPickerControllerAttachment? attachedMount;
 
   int _previousCycle = 0;
 
   final FixedExtentScrollController _controller;
 
-  _AttachedWheelPickerController(
+  _WheelPickerControllerAttachment(
+    this._controller,
     this.itemCount,
     this.looping,
     this.attachedMount,
-    int initialIndex,
-  ) : _controller = FixedExtentScrollController(initialItem: initialIndex) {
+  ) {
     if (looping && attachedMount != null) {
       _controller.addListener(_onLoopShiftMount);
     }
@@ -74,29 +86,28 @@ class _AttachedWheelPickerController {
     }
   }
 
-  void _shiftUp() {
+  Future<void> _shiftUp() async {
     if (!looping && _controller.selectedItem == 0) return; //! Edge
-    _animateFromCurrent(-1);
+    return await _animateFromCurrent(-1);
   }
 
-  void _shiftDown() {
+  Future<void> _shiftDown() async {
     if (!looping && _controller.selectedItem == itemCount - 1) return; //! Edge
-    _animateFromCurrent(1);
+    return await _animateFromCurrent(1);
   }
 
-  void _animateFromCurrent(int step) {
+  Future<void> _animateFromCurrent(int step) async {
     if (!_hasClients) return;
-    _controller.animateToItem(
+    return await _controller.animateToItem(
       _controller.selectedItem + step,
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeInOut,
     );
   }
 
-  int getCurrent() => _hasClients ? _controller.initialItem : -1;
+  int? getCurrent() => _hasClients ? _controller.selectedItem : null;
 
-  void dispose() {
+  void disposeAttachment() {
     _controller.removeListener(_onLoopShiftMount);
-    _controller.dispose();
   }
 }
