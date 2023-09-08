@@ -1,12 +1,12 @@
 part of './wheel_picker_controller.dart';
 
-class WheelPicker extends StatefulWidget {
+class WheelPicker extends StatelessWidget {
   final Widget Function(BuildContext context, int index) builder;
   final int? itemCount;
   final WheelPickerController? controller;
   final int? initialIndex;
-  final Widget Function(BuildContext context, int index)? selectedIndexBuilder;
   final bool looping;
+  final Color? selectedIndexColor;
   final bool enableTap;
   final void Function(int index)? onIndexChanged;
   final WheelPickerStyle style;
@@ -16,9 +16,9 @@ class WheelPicker extends StatefulWidget {
     this.itemCount,
     this.controller,
     this.initialIndex,
-    this.selectedIndexBuilder,
     this.looping = true,
-    this.enableTap = true,
+    this.selectedIndexColor,
+    this.enableTap = false,
     this.onIndexChanged,
     this.style = WheelPickerStyle.defaultStyle,
     super.key,
@@ -33,138 +33,130 @@ class WheelPicker extends StatefulWidget {
         assert(
           !(initialIndex != null && controller != null),
           "Can't have both initialIndex and controller.",
+        ),
+        assert(
+          !(enableTap == true && controller == null),
+          "Tap events must work with a controller.",
         );
-
-  @override
-  State<WheelPicker> createState() => _WheelPickerState();
-}
-
-class _WheelPickerState extends State<WheelPicker> {
-  int? _current;
-  late WheelPickerController _controller;
-
-  @override
-  void initState() {
-    _controller = widget.controller ??
-        WheelPickerController(
-          itemCount: widget.itemCount!,
-          initialIndex: widget.initialIndex ?? 0,
-        );
-
-    _controller._attach(widget.looping, widget.style.shiftStyle);
-    if (widget.selectedIndexBuilder != null) {
-      _current = _controller.initialIndex;
-    }
-    super.initState();
-  }
-
-  @override
-  void didUpdateWidget(covariant WheelPicker oldWidget) {
-    _controller._attach(widget.looping, widget.style.shiftStyle);
-    super.didUpdateWidget(oldWidget);
-  }
 
   @override
   Widget build(BuildContext context) {
-    final range = (widget.itemCount ?? _controller.itemCount);
-    if (range <= 0) {
-      return SizedBox(width: widget.style.width, height: widget.style.height);
-    }
+    final range = (itemCount ?? controller?.itemCount)!;
+    assert(range > 0, "itemCount must be a positive number");
+    controller?._attach(looping, style.shiftStyle);
 
-    final wheel = widget.looping
+    Widget wheel = looping
         ? _loopingWheel(context, range)
         : _nonLoopingWheel(context, range);
 
+    if (enableTap) {
+      wheel = _tapDetectsWrapper(wheel: wheel);
+    }
+
+    if (selectedIndexColor != null) {
+      wheel = _centerColorShaderMaskWrapper(wheel: wheel);
+    }
+
     return SizedBox(
-      width: widget.style.width,
-      height: widget.style.height,
-      child:
-          widget.enableTap == true ? _wrapWithTapDetects(wheel: wheel) : wheel,
+      width: style.width,
+      height: style.height,
+      child: wheel,
     );
+  }
+
+  void Function(int)? _onIndexChangedMethodFactory(int range) {
+    return (int index) {
+      controller?._update(index);
+      onIndexChanged?.call(index % range);
+    };
   }
 
   Widget _loopingWheel(BuildContext context, int range) {
     return ListWheelScrollView.useDelegate(
-      itemExtent: widget.style.itemExtent,
+      itemExtent: style.itemExtent,
       childDelegate: ListWheelChildBuilderDelegate(
-        builder: _loopingItemBuilderFactory(range),
+        builder: (context, index) => builder(context, index % range),
       ),
-      controller: _controller._scrollController,
-      onSelectedItemChanged: _onIndexChangedFactory(range),
+      controller: controller?._scrollController,
+      onSelectedItemChanged: _onIndexChangedMethodFactory(range),
       physics: const FixedExtentScrollPhysics(),
-      diameterRatio: widget.style.diameterRatio,
-      squeeze: widget.style.squeeze,
-      overAndUnderCenterOpacity: widget.style.betweenItemOpacity,
-      magnification: widget.style.magnification,
+      diameterRatio: style.diameterRatio,
+      squeeze: style.squeeze,
+      overAndUnderCenterOpacity: style.betweenItemOpacity,
+      magnification: style.magnification,
     );
   }
 
   Widget _nonLoopingWheel(BuildContext context, int range) {
     return ListWheelScrollView(
-      itemExtent: widget.style.itemExtent,
-      controller: _controller._scrollController,
-      onSelectedItemChanged: _onIndexChangedFactory(range),
+      itemExtent: style.itemExtent,
+      controller: controller?._scrollController,
+      onSelectedItemChanged: _onIndexChangedMethodFactory(range),
       physics: const FixedExtentScrollPhysics(),
-      diameterRatio: widget.style.diameterRatio,
-      squeeze: widget.style.squeeze,
-      overAndUnderCenterOpacity: widget.style.betweenItemOpacity,
-      magnification: widget.style.magnification,
-      children: List.generate(range, _nonLoopingItemBuilderFactory(range)),
+      diameterRatio: style.diameterRatio,
+      squeeze: style.squeeze,
+      overAndUnderCenterOpacity: style.betweenItemOpacity,
+      magnification: style.magnification,
+      children: List.generate(range, (index) => builder(context, index)),
     );
   }
 
-  Widget Function(BuildContext, int) _loopingItemBuilderFactory(int range) {
-    return (widget.selectedIndexBuilder == null)
-        ? (context, index) => widget.builder(context, index % range)
-        : (context, index) {
-            final relativeIndex = index % range;
-            final builder = (_current == relativeIndex)
-                ? widget.selectedIndexBuilder!
-                : widget.builder;
-            return builder(context, relativeIndex);
-          };
-  }
-
-  Widget Function(int) _nonLoopingItemBuilderFactory(int range) {
-    return (widget.selectedIndexBuilder == null)
-        ? (index) => widget.builder(context, index)
-        : (index) {
-            final relativeIndex = index % range;
-            final builder = (_current == relativeIndex)
-                ? widget.selectedIndexBuilder!
-                : widget.builder;
-            return builder(context, relativeIndex);
-          };
-  }
-
-  void Function(int)? _onIndexChangedFactory(int range) {
-    if (widget.selectedIndexBuilder == null) {
-      return (int index) {
-        _controller._update(index);
-        widget.onIndexChanged?.call(index % range);
-      };
-    } else {
-      return (int index) {
-        _controller._update(index);
-        setState(() => _current = index % range);
-        widget.onIndexChanged?.call(_current!);
-      };
-    }
-  }
-
-  Widget _wrapWithTapDetects({required Widget wheel}) {
-    final viewHeight = widget.style.height;
-    final itemHeightRatio = widget.style.itemExtent / viewHeight;
+  Widget _tapDetectsWrapper({required Widget wheel}) {
+    final offCenterHeight = (style.itemExtent * .5) / style.height;
     return GestureDetector(
       onTapUp: (details) {
-        final tapLocation = (details.localPosition.dy / viewHeight) - .5;
-        if (tapLocation > itemHeightRatio) {
-          _controller.shiftDown();
-        } else if (tapLocation < -itemHeightRatio) {
-          _controller.shiftUp();
+        final tapLocation = details.localPosition.dy;
+        final normalizedLocation = (tapLocation / style.height) - .5;
+        if (normalizedLocation > offCenterHeight) {
+          controller?.shiftDown();
+        } else if (normalizedLocation < -offCenterHeight) {
+          controller?.shiftUp();
         }
       },
       child: wheel,
     );
   }
+
+  Widget _centerColorShaderMaskWrapper({required Widget? wheel}) {
+    return ShaderMask(
+      blendMode: BlendMode.srcATop,
+      shaderCallback: (Rect bounds) {
+        final centerHeightRatio = _mapValue(
+          style.itemExtent * style.magnification,
+          0.0,
+          style.height,
+          0.0,
+          1.0,
+        );
+        final v = (1 - centerHeightRatio) * .5;
+
+        return LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          stops: [v, v, 1 - v, 1 - v],
+          colors: [
+            Colors.transparent,
+            selectedIndexColor!,
+            selectedIndexColor!,
+            Colors.transparent,
+          ],
+        ).createShader(bounds);
+      },
+      child: wheel,
+    );
+  }
+}
+
+double _mapValue(
+  double value,
+  double inputMin,
+  double inputMax,
+  double outputMin,
+  double outputMax,
+) {
+  value = value.clamp(inputMin, inputMax);
+
+  return ((value - inputMin) / (inputMax - inputMin)) *
+          (outputMax - outputMin) +
+      outputMin;
 }

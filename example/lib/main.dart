@@ -28,18 +28,16 @@ class Example extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = TimeOfDay.now();
-    final c1 =
-        WheelPickerController(itemCount: 12, initialIndex: now.hour % 12);
-    final c2 = WheelPickerController(
+    final wheelHours = WheelPickerController(
+      itemCount: 12,
+      initialIndex: now.hour % 12,
+    );
+    final wheelMinutes = WheelPickerController(
       itemCount: 60,
       initialIndex: now.minute,
-      mounts: [c1],
+      mounts: [wheelHours],
     );
-
-    const textStyle = TextStyle(
-      fontSize: 26.0,
-      height: 1.4,
-    );
+    const textStyle = TextStyle(fontSize: 26.0, height: 1.4);
 
     final wheelStyle = WheelPickerStyle(
       itemExtent: textStyle.fontSize! * textStyle.height!,
@@ -49,13 +47,6 @@ class Example extends StatelessWidget {
 
     Widget buildItem(BuildContext context, int index) {
       return Text("$index".padLeft(2, '0'), style: textStyle);
-    }
-
-    Widget buildSelectedIndex(BuildContext context, int index) {
-      return Text(
-        "$index".padLeft(2, '0'),
-        style: textStyle.copyWith(color: Colors.redAccent),
-      );
     }
 
     const barWidth = 200.0;
@@ -74,17 +65,18 @@ class Example extends StatelessWidget {
                 children: [
                   WheelPicker(
                     builder: buildItem,
-                    selectedIndexBuilder: buildSelectedIndex,
-                    controller: c1,
+                    controller: wheelHours,
                     looping: false,
                     style: wheelStyle,
+                    selectedIndexColor: Colors.redAccent,
                   ),
                   const Text(":", style: textStyle),
                   WheelPicker(
                     builder: buildItem,
-                    selectedIndexBuilder: buildSelectedIndex,
-                    controller: c2,
-                    style: wheelStyle.copyWith(squeeze: 1.5),
+                    controller: wheelMinutes,
+                    style: wheelStyle.copyWith(squeeze: 1.5, magnification: 1),
+                    enableTap: true,
+                    selectedIndexColor: Colors.redAccent,
                   ),
                 ],
               ),
@@ -94,12 +86,7 @@ class Example extends StatelessWidget {
                   return Text(["AM", "PM"][index], style: textStyle);
                 },
                 looping: false,
-                style: wheelStyle.copyWith(
-                  shiftStyle: const WheelShiftStyle(
-                    duration: Duration(milliseconds: 300),
-                    curve: Curves.slowMiddle,
-                  ),
-                ),
+                style: wheelStyle,
               ),
             ],
           ),
@@ -111,7 +98,7 @@ class Example extends StatelessWidget {
   Widget _centerBar(BuildContext context) {
     return Center(
       child: Container(
-        height: 32.0,
+        height: 38.0,
         decoration: BoxDecoration(
           color: const Color(0xFFC3C9FA).withAlpha(26),
           borderRadius: BorderRadius.circular(8.0),
