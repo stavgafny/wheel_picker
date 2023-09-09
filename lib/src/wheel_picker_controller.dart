@@ -8,7 +8,6 @@ part './wheel_picker.dart';
 /// The `WheelPickerController` allows you to:
 /// - Retrieve the selected item index.
 /// - Shift the attached `WheelPicker` widget.
-/// - Enable tap gestures for scrolling.
 /// - Mount additional `WheelPickerController` instances, which will be shifted when looped.
 ///
 /// It provides precise control over scrolling and synchronization of multiple `WheelPicker` widgets.
@@ -49,6 +48,8 @@ class WheelPickerController {
   /// ```dart
   /// final controller = WheelPickerController(itemCount: 10, initialIndex: 2);
   /// ```
+  ///
+  /// Note: Make sure to manually dispose of the controller when it is no longer needed to release associated resources.
   WheelPickerController({
     required this.itemCount,
     this.initialIndex = 0,
@@ -63,7 +64,8 @@ class WheelPickerController {
 
   /// Attaches the controller to a [WheelPicker] widget instance.
   ///
-  /// Provided with current instance `looping` flag and `shiftAnimationStyle`.
+  /// Provided with current instance `looping` and `shiftAnimationStyle`.
+  ///
   /// * Note that this is only supposed to be used by the [WheelPicker] widget.
   void _attach(bool looping, WheelShiftAnimationStyle shiftAnimationStyle) {
     _looping = looping;
@@ -75,6 +77,7 @@ class WheelPickerController {
   /// Use this method to update the controller with the latest selected item based on the relative index from given index.
   ///
   /// Checks for optional cycle changes and calls [_shiftMounts] accordingly.
+  ///
   /// * Note that this is only supposed to be used by the [WheelPicker] widget.
   void _update(int index) {
     if (!_hasClients) return;
@@ -92,6 +95,7 @@ class WheelPickerController {
   /// Shifts mounted controllers in the specified direction.
   ///
   /// Use this method to shift attached controllers based on the given `direction`.
+  ///
   /// * Note that this is only supposed to be used by the controller itself.
   void _shiftMounts(VerticalDirection direction) {
     if (direction == VerticalDirection.down) {

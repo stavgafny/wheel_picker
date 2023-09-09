@@ -41,18 +41,14 @@ class Example extends StatelessWidget {
 
     final wheelStyle = WheelPickerStyle(
       itemExtent: textStyle.fontSize! * textStyle.height!,
-      squeeze: 1,
-      diameterRatio: .8,
     );
 
-    Widget buildItem(BuildContext context, int index) {
+    Widget itemBuilder(BuildContext context, int index) {
       return Text("$index".padLeft(2, '0'), style: textStyle);
     }
 
-    const barWidth = 200.0;
-
     return SizedBox(
-      width: barWidth,
+      width: 200.0,
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -64,7 +60,7 @@ class Example extends StatelessWidget {
               Row(
                 children: [
                   WheelPicker(
-                    builder: buildItem,
+                    builder: itemBuilder,
                     controller: wheelHours,
                     looping: false,
                     style: wheelStyle,
@@ -72,9 +68,9 @@ class Example extends StatelessWidget {
                   ),
                   const Text(":", style: textStyle),
                   WheelPicker(
-                    builder: buildItem,
+                    builder: itemBuilder,
                     controller: wheelMinutes,
-                    style: wheelStyle.copyWith(squeeze: 1.5, magnification: 1),
+                    style: wheelStyle.copyWith(squeeze: 1.2, magnification: 1),
                     enableTap: true,
                     selectedIndexColor: Colors.redAccent,
                   ),
@@ -85,6 +81,7 @@ class Example extends StatelessWidget {
                 builder: (context, index) {
                   return Text(["AM", "PM"][index], style: textStyle);
                 },
+                initialIndex: (now.period == DayPeriod.am) ? 0 : 1,
                 looping: false,
                 style: wheelStyle,
               ),

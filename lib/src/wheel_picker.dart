@@ -5,10 +5,9 @@ part of './wheel_picker_controller.dart';
 /// Key Features:
 /// - Supports both looping and non-looping scrolling behavior.
 /// - Customizable appearance and styling through `WheelPickerStyle`.
-/// - Easily integrates with a controller for precise control and synchronization.
 /// - Enables tap gestures for intuitive navigation through the wheel.
+/// - Easily integrates with a controller for precise control and synchronization.
 /// - Provides the ability to highlight the selected item with a color shader.
-/// - Allows mounting `WheelPickerController`s and automatically shifting them when looped.
 ///
 /// Usage:
 /// `WheelPicker` is highly configurable and can be adapted to different use cases by specifying the builder function, initial settings, and style properties. It's a valuable component for creating user-friendly and visually appealing selection interfaces in your Flutter applications.
@@ -40,8 +39,7 @@ part of './wheel_picker_controller.dart';
 /// ```
 ///
 /// Simplify the process of creating scrollable selection wheels in Flutter, making it easier to build interactive and engaging user interfaces.
-
-class WheelPicker extends StatelessWidget {
+class WheelPicker extends StatefulWidget {
   /// Callback for creating item widgets based on their index.
   final Widget Function(BuildContext context, int index) builder;
 
@@ -65,8 +63,6 @@ class WheelPicker extends StatelessWidget {
   final Color? selectedIndexColor;
 
   /// Whether to enable tap gestures for item selection.
-  ///
-  /// A controller must be specified for this to work.
   final bool enableTap;
 
   /// Callback function that is called for when the selected item index changes.
@@ -85,7 +81,7 @@ class WheelPicker extends StatelessWidget {
     this.initialIndex,
     this.looping = true,
     this.selectedIndexColor,
-    this.enableTap = false,
+    this.enableTap = true,
     this.onIndexChanged,
     this.style = const WheelPickerStyle(),
     super.key,
@@ -100,76 +96,122 @@ class WheelPicker extends StatelessWidget {
         assert(
           !(initialIndex != null && controller != null),
           "Can't have both initialIndex and controller.",
-        ),
-        assert(
-          !(enableTap == true && controller == null),
-          "Tap events must work with a controller.",
         );
 
   @override
+  State<WheelPicker> createState() => _WheelPickerState();
+}
+
+class _WheelPickerState extends State<WheelPicker> {
+  /// Creates a [WheelPickerController] instance based on the specified controller,
+  /// or falls back to creating a new one if no controller is provided.
+  ///
+  /// If `_controller` falls back to being created, it implies that there is no
+  /// specified controller, and consequently, `itemCount` and `initialIndex` must not be null.
+  ///
+  /// Note that if a new controller is made, it also gets disposed within the widget's scope.
+  late final WheelPickerController _controller = widget.controller ??
+      WheelPickerController(
+        itemCount: widget.itemCount!,
+        initialIndex: widget.initialIndex!,
+      );
+
+  /// Retrieves the range (item count) from the already initialized [_controller].
+  int _getRange() => _controller.itemCount;
+
+  /// Attaches the controller to the widget, configuring looping behavior and shift animation style.
+  void _attachController() {
+    _controller._attach(widget.looping, widget.style.shiftAnimationStyle);
+  }
+
+  @override
+  void initState() {
+    // Ensure itemCount is valid.
+    assert(_getRange() > 0, "itemCount can't be less or equal to zero.");
+    // Attach the controller to configure its behavior.
+    _attachController();
+
+    super.initState();
+  }
+
+  @override
+  void didUpdateWidget(covariant WheelPicker oldWidget) {
+    // Re-attach the controller when the widget is updated.
+    _attachController();
+
+    super.didUpdateWidget(oldWidget);
+  }
+
+  /// Dispose of the [_controller] if it's not the specified controller but was instead created within the widget's scope.
+  @override
+  void dispose() {
+    if (_controller != widget.controller) {
+      _controller.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final range = (itemCount ?? controller?.itemCount)!;
-    if (range <= 0) return SizedBox(width: style.width, height: style.height);
+    final range = _getRange();
 
-    controller?._attach(looping, style.shiftAnimationStyle);
-
-    Widget wheel = looping
+    Widget wheel = widget.looping
         ? _loopingWheel(context, range)
         : _nonLoopingWheel(context, range);
 
-    if (enableTap) {
+    if (widget.enableTap) {
       wheel = _tapDetectsWrapper(wheel: wheel);
     }
 
-    if (selectedIndexColor != null) {
+    if (widget.selectedIndexColor != null) {
       wheel = _centerColorShaderMaskWrapper(wheel: wheel);
     }
 
     return SizedBox(
-      width: style.width,
-      height: style.height,
+      width: widget.style.width,
+      height: widget.style.height,
       child: wheel,
     );
   }
 
-  /// Factory method that updates possible [controller] and calls possible [onIndexChanged]
+  /// Factory method that updates possible [widget.controller] and calls possible [widget.onIndexChanged]
   /// with the relative based on `index` and given `range`.
   void Function(int)? _onIndexChangedMethodFactory(int range) {
     return (int index) {
-      controller?._update(index);
-      onIndexChanged?.call(index % range);
+      _controller._update(index);
+      widget.onIndexChanged?.call(index % range);
     };
   }
 
   /// Constructs a looping scroll wheel with items that are passed to a delegate with lazily built during layout.
   Widget _loopingWheel(BuildContext context, int range) {
     return ListWheelScrollView.useDelegate(
-      itemExtent: style.itemExtent,
+      itemExtent: widget.style.itemExtent,
       childDelegate: ListWheelChildBuilderDelegate(
-        builder: (context, index) => builder(context, index % range),
+        builder: (context, index) => widget.builder(context, index % range),
       ),
-      controller: controller?._scrollController,
+      controller: _controller._scrollController,
       onSelectedItemChanged: _onIndexChangedMethodFactory(range),
       physics: const FixedExtentScrollPhysics(),
-      diameterRatio: style.diameterRatio,
-      squeeze: style.squeeze,
-      overAndUnderCenterOpacity: style.surroundingOpacity,
-      magnification: style.magnification,
+      diameterRatio: widget.style.diameterRatio,
+      squeeze: widget.style.squeeze,
+      overAndUnderCenterOpacity: widget.style.surroundingOpacity,
+      magnification: widget.style.magnification,
     );
   }
 
   /// Constructs a non looping scroll wheel with items that are passed to a delegate with lazily built during layout.
   Widget _nonLoopingWheel(BuildContext context, int range) {
     return ListWheelScrollView(
-      itemExtent: style.itemExtent,
-      controller: controller?._scrollController,
+      itemExtent: widget.style.itemExtent,
+      controller: _controller._scrollController,
       onSelectedItemChanged: _onIndexChangedMethodFactory(range),
       physics: const FixedExtentScrollPhysics(),
-      diameterRatio: style.diameterRatio,
-      squeeze: style.squeeze,
-      overAndUnderCenterOpacity: style.surroundingOpacity,
-      magnification: style.magnification,
-      children: List.generate(range, (index) => builder(context, index)),
+      diameterRatio: widget.style.diameterRatio,
+      squeeze: widget.style.squeeze,
+      overAndUnderCenterOpacity: widget.style.surroundingOpacity,
+      magnification: widget.style.magnification,
+      children: List.generate(range, (index) => widget.builder(context, index)),
     );
   }
 
@@ -181,15 +223,16 @@ class WheelPicker extends StatelessWidget {
   /// to whether an offset is positive or negative.
   /// If the offset is smaller then half the itemExtent, it does nothing.
   Widget _tapDetectsWrapper({required Widget wheel}) {
-    final offCenterHeight = (style.itemExtent * .5) / style.height;
+    final offCenterHeight =
+        (widget.style.itemExtent * .5) / widget.style.height;
     return GestureDetector(
       onTapUp: (details) {
         final tapLocation = details.localPosition.dy;
-        final normalizedLocation = (tapLocation / style.height) - .5;
+        final normalizedLocation = (tapLocation / widget.style.height) - .5;
         if (normalizedLocation > offCenterHeight) {
-          controller?.shiftDown();
+          _controller.shiftDown();
         } else if (normalizedLocation < -offCenterHeight) {
-          controller?.shiftUp();
+          _controller.shiftUp();
         }
       },
       child: wheel,
@@ -202,8 +245,10 @@ class WheelPicker extends StatelessWidget {
     return ShaderMask(
       blendMode: BlendMode.srcATop,
       shaderCallback: (Rect bounds) {
-        final v =
-            (1 - (style.itemExtent * style.magnification) / style.height) * .5;
+        final v = (1 -
+                (widget.style.itemExtent * widget.style.magnification) /
+                    widget.style.height) *
+            .5;
 
         return LinearGradient(
           begin: Alignment.topCenter,
@@ -211,8 +256,8 @@ class WheelPicker extends StatelessWidget {
           stops: [v, v, 1 - v, 1 - v],
           colors: [
             Colors.transparent,
-            selectedIndexColor!,
-            selectedIndexColor!,
+            widget.selectedIndexColor!,
+            widget.selectedIndexColor!,
             Colors.transparent,
           ],
         ).createShader(bounds);
