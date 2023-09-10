@@ -119,26 +119,25 @@ class _WheelPickerState extends State<WheelPicker> {
   /// Retrieves the range (item count) from the already initialized [_controller].
   int _getRange() => _controller.itemCount;
 
-  /// Attaches the controller to the widget, configuring looping and shift
-  /// animation style as well as ensuring scroll controller.
-  void _attachController() {
-    _controller._attach(widget.looping, widget.style.shiftAnimationStyle);
-  }
-
+  /// Attaches the controller to the widget, configuring looping and shift animation style.
   @override
   void initState() {
     // Ensure itemCount is valid.
     assert(_getRange() > 0, "itemCount can't be less or equal to zero.");
-    // Attach the controller to configure its behavior.
-    _attachController();
+
+    // Attach the controller and configures its behavior.
+    _controller._attach();
+    _controller._setProps(widget.looping, widget.style.shiftAnimationStyle);
 
     super.initState();
   }
 
+  /// Update widget props for any possible changes.
+  ///
+  /// This is to update properties changes with Hot-Reload without needing to Hot-Restart.
   @override
   void didUpdateWidget(covariant WheelPicker oldWidget) {
-    // Re-attach the controller when the widget is updated.
-    /// ///_attachController();
+    _controller._setProps(widget.looping, widget.style.shiftAnimationStyle);
 
     super.didUpdateWidget(oldWidget);
   }

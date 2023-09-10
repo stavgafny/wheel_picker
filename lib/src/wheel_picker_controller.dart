@@ -62,21 +62,25 @@ class WheelPickerController {
   /// Wether scroll controller is attached to a mounted widget.
   bool get _hasClients => _scrollController.hasClients;
 
-  /// Attaches the controller to a [WheelPicker] widget instance.
-  ///
-  /// Sets the current instance with the provided `looping` and `shiftAnimationStyle`.
+  /// Attaches the controller's [_scrollController] to a [WheelPicker] widget instance.
   ///
   /// If [_scrollController] `initialItem` differs from [_current], it updates
   /// the scroll controller by replacing it with a new one and disposing of the previous one.
   ///
   /// * This method is intended for use by the [WheelPicker] widget.
-  void _attach(bool looping, WheelShiftAnimationStyle shiftAnimationStyle) {
-    _looping = looping;
-    _shiftAnimationStyle = shiftAnimationStyle;
+  void _attach() {
     if (_scrollController.initialItem != _current) {
       _scrollController.dispose();
       _scrollController = FixedExtentScrollController(initialItem: _current);
     }
+  }
+
+  /// Sets current instance with `looping` and `shiftAnimationStyle` properties.
+  ///
+  /// * This method is intended for use by the [WheelPicker] widget.
+  void _setProps(bool looping, WheelShiftAnimationStyle shiftAnimationStyle) {
+    _looping = looping;
+    _shiftAnimationStyle = shiftAnimationStyle;
   }
 
   /// Updates the controller with a new selected item index.
@@ -143,12 +147,12 @@ class WheelPickerController {
     return await _shiftController(this, steps, _shiftAnimationStyle);
   }
 
-  /// Retrieves the current selected item index.
+  /// The current selected item index.
   ///
   /// Returns:
   /// - The current selected item index if the controller has clients (attached).
   /// - `-1` if the controller has no clients (not attached).
-  int getCurrent() => _hasClients ? _current : -1;
+  int get selected => _hasClients ? _current : -1;
 
   /// Disposes of the controller and its resources.
   ///
