@@ -107,19 +107,20 @@ class _WheelPickerState extends State<WheelPicker> {
   /// or falls back to creating a new one if no controller is provided.
   ///
   /// If `_controller` falls back to being created, it implies that there is no
-  /// specified controller, and consequently, `itemCount` and `initialIndex` must not be null.
+  /// specified controller, and consequently, `itemCount` must not be null.
   ///
   /// Note that if a new controller is made, it also gets disposed within the widget's scope.
   late final WheelPickerController _controller = widget.controller ??
       WheelPickerController(
         itemCount: widget.itemCount!,
-        initialIndex: widget.initialIndex!,
+        initialIndex: widget.initialIndex ?? 0,
       );
 
   /// Retrieves the range (item count) from the already initialized [_controller].
   int _getRange() => _controller.itemCount;
 
-  /// Attaches the controller to the widget, configuring looping behavior and shift animation style.
+  /// Attaches the controller to the widget, configuring looping and shift
+  /// animation style as well as ensuring scroll controller.
   void _attachController() {
     _controller._attach(widget.looping, widget.style.shiftAnimationStyle);
   }
@@ -137,7 +138,7 @@ class _WheelPickerState extends State<WheelPicker> {
   @override
   void didUpdateWidget(covariant WheelPicker oldWidget) {
     // Re-attach the controller when the widget is updated.
-    _attachController();
+    /// ///_attachController();
 
     super.didUpdateWidget(oldWidget);
   }

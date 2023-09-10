@@ -27,7 +27,7 @@ class WheelPickerController {
   final List<WheelPickerController> _mounts;
 
   /// The scroll controller used for managing scroll behavior.
-  final FixedExtentScrollController _scrollController;
+  FixedExtentScrollController _scrollController;
 
   /// The current selected item index.
   int _current;
@@ -64,12 +64,19 @@ class WheelPickerController {
 
   /// Attaches the controller to a [WheelPicker] widget instance.
   ///
-  /// Provided with current instance `looping` and `shiftAnimationStyle`.
+  /// Sets the current instance with the provided `looping` and `shiftAnimationStyle`.
   ///
-  /// * Note that this is only supposed to be used by the [WheelPicker] widget.
+  /// If [_scrollController] `initialItem` differs from [_current], it updates
+  /// the scroll controller by replacing it with a new one and disposing of the previous one.
+  ///
+  /// * This method is intended for use by the [WheelPicker] widget.
   void _attach(bool looping, WheelShiftAnimationStyle shiftAnimationStyle) {
     _looping = looping;
     _shiftAnimationStyle = shiftAnimationStyle;
+    if (_scrollController.initialItem != _current) {
+      _scrollController.dispose();
+      _scrollController = FixedExtentScrollController(initialItem: _current);
+    }
   }
 
   /// Updates the controller with a new selected item index.
@@ -78,7 +85,7 @@ class WheelPickerController {
   ///
   /// Checks for optional cycle changes and calls [_shiftMounts] accordingly.
   ///
-  /// * Note that this is only supposed to be used by the [WheelPicker] widget.
+  /// * This method is intended for use by the [WheelPicker] widget.
   void _update(int index) {
     if (!_hasClients) return;
     _current = index % itemCount;
@@ -96,7 +103,7 @@ class WheelPickerController {
   ///
   /// Use this method to shift attached controllers based on the given `direction`.
   ///
-  /// * Note that this is only supposed to be used by the controller itself.
+  /// * This method is intended for use by the controller itself.
   void _shiftMounts(VerticalDirection direction) {
     if (direction == VerticalDirection.down) {
       for (final mount in _mounts) {

@@ -10,8 +10,8 @@ class WheelPickerStyle {
   static const _defaultItemExtent = 20.0;
   static const _defaultDiameterRatio = 1.0;
   static const _defaultSqueeze = 1.0;
-  static const _defaultSurroundingOpacity = .25;
-  static const _defaultMagnification = 1.25;
+  static const _defaultSurroundingOpacity = 1.0;
+  static const _defaultMagnification = 1.0;
   static const _defaultShiftAnimationStyle = WheelShiftAnimationStyle(
     duration: Duration(milliseconds: 200),
     curve: Curves.decelerate,

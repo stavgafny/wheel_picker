@@ -22,25 +22,37 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class Example extends StatelessWidget {
+class Example extends StatefulWidget {
   const Example({super.key});
 
   @override
+  State<Example> createState() => _ExampleState();
+}
+
+class _ExampleState extends State<Example> {
+  final now = TimeOfDay.now();
+  late final wheelHours = WheelPickerController(
+    itemCount: 12,
+    initialIndex: now.hour % 12,
+  );
+  late final wheelMinutes = WheelPickerController(
+    itemCount: 60,
+    initialIndex: now.minute,
+    mounts: [wheelHours],
+  );
+
+  bool visible = true;
+  @override
   Widget build(BuildContext context) {
-    final now = TimeOfDay.now();
-    final wheelHours = WheelPickerController(
-      itemCount: 12,
-      initialIndex: now.hour % 12,
-    );
-    final wheelMinutes = WheelPickerController(
-      itemCount: 60,
-      initialIndex: now.minute,
-      mounts: [wheelHours],
-    );
     const textStyle = TextStyle(fontSize: 26.0, height: 1.4);
 
     final wheelStyle = WheelPickerStyle(
+      height: 200,
       itemExtent: textStyle.fontSize! * textStyle.height!,
+      squeeze: 1.25,
+      diameterRatio: .8,
+      surroundingOpacity: .25,
+      magnification: 1.2,
     );
 
     Widget itemBuilder(BuildContext context, int index) {
@@ -53,6 +65,19 @@ class Example extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           _centerBar(context),
+          Padding(
+            padding: const EdgeInsets.only(top: 200),
+            child: Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    visible = !visible;
+                  });
+                },
+                child: Text(visible ? "-" : "+"),
+              ),
+            ),
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -67,13 +92,15 @@ class Example extends StatelessWidget {
                     selectedIndexColor: Colors.redAccent,
                   ),
                   const Text(":", style: textStyle),
-                  WheelPicker(
-                    builder: itemBuilder,
-                    controller: wheelMinutes,
-                    style: wheelStyle.copyWith(squeeze: 1.2, magnification: 1),
-                    enableTap: true,
-                    selectedIndexColor: Colors.redAccent,
-                  ),
+                  visible
+                      ? WheelPicker(
+                          builder: itemBuilder,
+                          controller: wheelMinutes,
+                          style: wheelStyle,
+                          enableTap: true,
+                          selectedIndexColor: Colors.redAccent,
+                        )
+                      : const SizedBox(),
                 ],
               ),
               WheelPicker(
