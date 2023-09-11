@@ -2,9 +2,11 @@
 
 A superset version of original [ListWheelScrollView](https://api.flutter.dev/flutter/widgets/ListWheelScrollView-class.html) for easily creating wheel scroll input.
 
+[![Flutter](https://img.shields.io/badge/Platform-Flutter-blue.svg)](https://flutter.dev/) [![Pub](https://img.shields.io/badge/pub-v0.0.1-orange.svg)]()
+
 <div style="display: flex; flex-direction: row;">
-    <img src="docs/counter.gif" alt="Left Image" width="50%">
-    <img src="docs/time.gif" alt="Right Image" width="50%">
+    <img src="docs/counter.gif" alt="Left Image" width="30%">
+    <img src="docs/time.gif" alt="Right Image" width="30%">
 </div>
 
 ## Key Features
@@ -99,12 +101,11 @@ void main() => runApp(const MyApp());
 
 ### Advanced (Right Gif)
 
-For more control, you can also mount controllers, making them shift each other. See [`example`](example/lib/main.dart).
+For more control, you can also mount controllers, making them shift each other. See [example](example/lib/main.dart).
 
 <br />
-
-Feel free to share your feedback, suggestions, or contribute to this package.
-
 <br />
 
-If you like this package, consider supporting it by giving it a star on [GitHub](https://github.com/stavgafny/wheel_picker) and a like on [pub.dev](https://pub.dev/packages/wheel_picker) :heart:
+Feel free to share your feedback, suggestions, or contribute to this package :handshake:.
+
+If you like this package, consider supporting it by giving it a star on [GitHub](https://github.com/stavgafny/wheel_picker) and a like on [pub.dev](https://pub.dev/packages/wheel_picker) :heart:.
