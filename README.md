@@ -5,8 +5,8 @@ A superset version of original [ListWheelScrollView](https://api.flutter.dev/flu
 [![Flutter](https://img.shields.io/badge/Platform-Flutter-blue.svg)](https://flutter.dev/) [![Pub](https://img.shields.io/badge/pub-v0.0.1-orange.svg)]()
 
 <div style="display: flex; flex-direction: row;">
-    <img src="docs/counter.gif" alt="Left Image" width="30%">
-    <img src="docs/time.gif" alt="Right Image" width="30%">
+    <img src="doc/counter.gif" alt="Left Image" width="30%">
+    <img src="doc/time.gif" alt="Right Image" width="30%">
 </div>
 
 ## Key Features
