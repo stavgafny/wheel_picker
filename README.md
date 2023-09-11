@@ -1,39 +1,110 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# Wheel Picker
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages).
+A superset version of original [ListWheelScrollView](https://api.flutter.dev/flutter/widgets/ListWheelScrollView-class.html) for easily creating wheel scroll input.
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages).
--->
+<div style="display: flex; flex-direction: row;">
+    <img src="docs/counter.gif" alt="Left Image" width="50%">
+    <img src="docs/time.gif" alt="Right Image" width="50%">
+</div>
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+## Key Features
 
-## Features
+- **Item Selection**: Retrieve the selected item index effortlessly.
+- **Highlight Selection**: Highlight selected items with a color shader.
+- **Tap Navigation**: Enable tap scrolls.
+- **Styling Flexibility**: Customize wheel appearance with `WheelPickerStyle`.
+- **Precise Control**: Manage and synchronize `WheelPicker` widgets with a `WheelPickerController`.
+- **Mounting Controllers**: Easily integrate and shift multiple controllers.
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+## Installing
 
-## Getting started
+Add it to your `pubspec.yaml` file:
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+```yaml
+dependencies:
+  wheel_picker: ^0.0.1
+```
+
+Install packages from the command line
+
+```
+flutter packages get
+```
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+To use package, just import package `import 'package:wheel_picker/wheel_picker.dart';`
+
+## Example
+
+### Basic (Left Gif)
+
+For more controller you can attach a controller and adjust it to your liking:
 
 ```dart
-const like = 'sample';
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:wheel_picker/wheel_picker.dart';
+
+class WheelPickerExample extends StatelessWidget {
+  const WheelPickerExample({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final secondsWheel = WheelPickerController(itemCount: 10);
+    const textStyle = TextStyle(fontSize: 32.0, height: 1.5);
+
+    Timer.periodic(const Duration(seconds: 1), (_) => secondsWheel.shiftDown());
+
+    return WheelPicker(
+      builder: (context, index) => Text("$index", style: textStyle),
+      controller: secondsWheel,
+      selectedIndexColor: Colors.blue,
+      onIndexChanged: (index) {
+        print("On index $index");
+      },
+      style: WheelPickerStyle(
+        height: 300,
+        itemExtent: textStyle.fontSize! * textStyle.height!, // Text height
+        squeeze: 1.25,
+        diameterRatio: .8,
+        surroundingOpacity: .25,
+        magnification: 1.2,
+      ),
+    );
+  }
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      title: 'Flutter Example',
+      home: Scaffold(
+        body: Center(
+          child: WheelPickerExample(),
+        ),
+      ),
+    );
+  }
+}
+
+void main() => runApp(const MyApp());
 ```
 
-## Additional information
+> **Note:** This works for this short example but don't forget to dispose controllers you initialize youself.
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+### Advanced (Right Gif)
+
+For more control, you can also mount controllers, making them shift each other. See [`example`](example/lib/main.dart).
+
+<br />
+
+Feel free to share your feedback, suggestions, or contribute to this package.
+
+<br />
+
+If you like this package, consider supporting it by giving it a star on [GitHub](https://github.com/stavgafny/wheel_picker) and a like on [pub.dev](https://pub.dev/packages/wheel_picker) :heart:

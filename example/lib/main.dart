@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:wheel_picker/wheel_picker.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -15,40 +13,38 @@ class MyApp extends StatelessWidget {
       theme: ThemeData.dark(useMaterial3: true),
       home: const Scaffold(
         body: Center(
-          child: Example(),
+          child: WheelPickerExample(),
         ),
       ),
     );
   }
 }
 
-class Example extends StatefulWidget {
-  const Example({super.key});
+class WheelPickerExample extends StatefulWidget {
+  const WheelPickerExample({super.key});
 
   @override
-  State<Example> createState() => _ExampleState();
+  State<WheelPickerExample> createState() => _WheelPickerExampleState();
 }
 
-class _ExampleState extends State<Example> {
+class _WheelPickerExampleState extends State<WheelPickerExample> {
   final now = TimeOfDay.now();
-  late final wheelHours = WheelPickerController(
+  late final hoursWheel = WheelPickerController(
     itemCount: 12,
     initialIndex: now.hour % 12,
   );
-  late final wheelMinutes = WheelPickerController(
+  late final minutesWheel = WheelPickerController(
     itemCount: 60,
     initialIndex: now.minute,
-    mounts: [wheelHours],
+    mounts: [hoursWheel],
   );
 
-  bool visible = true;
   @override
   Widget build(BuildContext context) {
-    const textStyle = TextStyle(fontSize: 26.0, height: 1.4);
-
+    const textStyle = TextStyle(fontSize: 26.0, height: 1.5);
     final wheelStyle = WheelPickerStyle(
       height: 200,
-      itemExtent: textStyle.fontSize! * textStyle.height!,
+      itemExtent: textStyle.fontSize! * textStyle.height!, // Text height
       squeeze: 1.25,
       diameterRatio: .8,
       surroundingOpacity: .25,
@@ -65,19 +61,6 @@ class _ExampleState extends State<Example> {
         fit: StackFit.expand,
         children: [
           _centerBar(context),
-          Padding(
-            padding: const EdgeInsets.only(top: 200),
-            child: Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    visible = !visible;
-                  });
-                },
-                child: Text(visible ? "-" : "+"),
-              ),
-            ),
-          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -86,21 +69,19 @@ class _ExampleState extends State<Example> {
                 children: [
                   WheelPicker(
                     builder: itemBuilder,
-                    controller: wheelHours,
+                    controller: hoursWheel,
                     looping: false,
                     style: wheelStyle,
                     selectedIndexColor: Colors.redAccent,
                   ),
                   const Text(":", style: textStyle),
-                  visible
-                      ? WheelPicker(
-                          builder: itemBuilder,
-                          controller: wheelMinutes,
-                          style: wheelStyle,
-                          enableTap: true,
-                          selectedIndexColor: Colors.redAccent,
-                        )
-                      : const SizedBox(),
+                  WheelPicker(
+                    builder: itemBuilder,
+                    controller: minutesWheel,
+                    style: wheelStyle,
+                    enableTap: true,
+                    selectedIndexColor: Colors.redAccent,
+                  )
                 ],
               ),
               WheelPicker(
@@ -110,13 +91,24 @@ class _ExampleState extends State<Example> {
                 },
                 initialIndex: (now.period == DayPeriod.am) ? 0 : 1,
                 looping: false,
-                style: wheelStyle,
+                style: wheelStyle.copyWith(
+                    shiftAnimationStyle: const WheelShiftAnimationStyle(
+                  duration: Duration(seconds: 1),
+                  curve: Curves.bounceOut,
+                )),
               ),
             ],
           ),
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    hoursWheel.dispose();
+    minutesWheel.dispose();
+    super.dispose();
   }
 
   Widget _centerBar(BuildContext context) {
