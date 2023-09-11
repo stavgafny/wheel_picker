@@ -1,7 +1,7 @@
 name: wheel_picker
 description: A value/time picking widget using input wheels. Customizable and light weight.
 homepage: https://github.com/stavgafny/wheel_picker
-version: 0.0.1
+version: 0.0.2
 
 environment:
   sdk: '>=3.1.0 <4.0.0'

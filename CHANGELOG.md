@@ -5,4 +5,8 @@
 - Provided examples for using the package.
 - Listed key features and installation instructions.
 
-This release containts the `WheelPicker` widget with `WheelPickerController` and `WheelPickerStyle`.
+This release contains the `WheelPicker` widget with `WheelPickerController` and `WheelPickerStyle`.
+
+## Version 0.0.2:
+
+- Updated package README documentation.

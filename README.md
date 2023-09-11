@@ -2,11 +2,11 @@
 
 A superset version of original [ListWheelScrollView](https://api.flutter.dev/flutter/widgets/ListWheelScrollView-class.html) for easily creating wheel scroll input.
 
-[![Flutter](https://img.shields.io/badge/Platform-Flutter-blue.svg)](https://flutter.dev/) [![Pub](https://img.shields.io/badge/pub-v0.0.1-orange.svg)]()
+[![Flutter](https://img.shields.io/badge/Platform-Flutter-blue.svg)](https://flutter.dev/) [![Pub](https://img.shields.io/badge/pub-v0.0.2-orange.svg)]()
 
 <div style="display: flex; flex-direction: row;">
-    <img src="doc/counter.gif" alt="Left Image" width="30%">
-    <img src="doc/time.gif" alt="Right Image" width="30%">
+    <img src="https://raw.githubusercontent.com/stavgafny/wheel_picker/main/doc/counter.gif" alt="Left Gif" width="30%">
+    <img src="https://raw.githubusercontent.com/stavgafny/wheel_picker/main/doc/time.gif" alt="Right Gif" width="30%">
 </div>
 
 ## Key Features
@@ -24,10 +24,10 @@ Add it to your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  wheel_picker: ^0.0.1
+  wheel_picker: ^0.0.2
 ```
 
-Install packages from the command line
+Install packages from the command line:
 
 ```
 flutter packages get
