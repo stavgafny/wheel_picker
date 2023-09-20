@@ -10,3 +10,7 @@ This release contains the `WheelPicker` widget with `WheelPickerController` and 
 ## Version 0.0.2:
 
 - Updated package README documentation.
+
+## Version 0.0.3:
+
+- Updated package pubspec to have the repository instead of the homepage.
