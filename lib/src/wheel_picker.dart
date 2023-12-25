@@ -30,8 +30,7 @@ part of './wheel_picker_controller.dart';
 ///   },
 ///   style: WheelPickerStyle(
 ///     // Customize the appearance and behavior.
-///     width: 200,
-///     height: 150,
+///     size: 150,
 ///     itemExtent: 50,
 ///     // ...
 ///   ),
@@ -59,6 +58,9 @@ class WheelPicker extends StatefulWidget {
   /// Must be `true` for automatic shifting for mounted controllers.
   final bool looping;
 
+  /// Determines how the wheel is oriented and scrolled.
+  final Axis scrollDirection;
+
   /// The color used to highlight the selected item(center) using a shader mask.
   final Color? selectedIndexColor;
 
@@ -80,6 +82,7 @@ class WheelPicker extends StatefulWidget {
     this.controller,
     this.initialIndex,
     this.looping = true,
+    this.scrollDirection = Axis.vertical,
     this.selectedIndexColor,
     this.enableTap = true,
     this.onIndexChanged,
@@ -167,10 +170,13 @@ class _WheelPickerState extends State<WheelPicker> {
       wheel = _centerColorShaderMaskWrapper(wheel: wheel);
     }
 
-    return SizedBox(
-      width: widget.style.width,
-      height: widget.style.height,
-      child: wheel,
+    return _scrollDirectionWrapper(
+      rotateClockwise: false,
+      child: SizedBox(
+        width: widget.style.itemExtent * widget.style.magnification,
+        height: widget.style.size,
+        child: wheel,
+      ),
     );
   }
 
@@ -188,7 +194,10 @@ class _WheelPickerState extends State<WheelPicker> {
     return ListWheelScrollView.useDelegate(
       itemExtent: widget.style.itemExtent,
       childDelegate: ListWheelChildBuilderDelegate(
-        builder: (context, index) => widget.builder(context, index % range),
+        builder: (context, index) => _scrollDirectionWrapper(
+          rotateClockwise: true,
+          child: widget.builder(context, index % range),
+        ),
       ),
       controller: _controller._scrollController,
       onSelectedItemChanged: _onIndexChangedMethodFactory(range),
@@ -211,7 +220,28 @@ class _WheelPickerState extends State<WheelPicker> {
       squeeze: widget.style.squeeze,
       overAndUnderCenterOpacity: widget.style.surroundingOpacity,
       magnification: widget.style.magnification,
-      children: List.generate(range, (index) => widget.builder(context, index)),
+      children: List.generate(range, (index) {
+        return _scrollDirectionWrapper(
+          rotateClockwise: true,
+          child: widget.builder(context, index),
+        );
+      }),
+    );
+  }
+
+  /// Rotates child if [widget.scrollDirection] is horizontal.
+  ///
+  /// Rotation is either +90 or -90 degrees based on [rotateClockwise].
+  /// (used to rotate the wheel and its items on different directions to achieve
+  /// horizontal scroll view).
+  Widget _scrollDirectionWrapper({
+    required bool rotateClockwise,
+    required Widget child,
+  }) {
+    if (widget.scrollDirection == Axis.vertical) return child;
+    return Transform.rotate(
+      angle: (math.pi * (rotateClockwise ? 1 : -1)) / 2,
+      child: child,
     );
   }
 
@@ -223,15 +253,14 @@ class _WheelPickerState extends State<WheelPicker> {
   /// to whether an offset is positive or negative.
   /// If the offset is smaller then half the itemExtent, it does nothing.
   Widget _tapDetectsWrapper({required Widget wheel}) {
-    final offCenterHeight =
-        (widget.style.itemExtent * .5) / widget.style.height;
+    final offCenterSize = (widget.style.itemExtent * .5) / widget.style.size;
     return GestureDetector(
       onTapUp: (details) {
         final tapLocation = details.localPosition.dy;
-        final normalizedLocation = (tapLocation / widget.style.height) - .5;
-        if (normalizedLocation > offCenterHeight) {
+        final normalizedLocation = (tapLocation / widget.style.size) - .5;
+        if (normalizedLocation > offCenterSize) {
           _controller.shiftDown();
-        } else if (normalizedLocation < -offCenterHeight) {
+        } else if (normalizedLocation < -offCenterSize) {
           _controller.shiftUp();
         }
       },
@@ -240,14 +269,14 @@ class _WheelPickerState extends State<WheelPicker> {
   }
 
   /// Wrapps wheel with a [ShaderMask] of [BlendMode.srcATop] and places it on top
-  /// of the wheel's center at height of the `itemExtent` and `magnification`.
+  /// of the wheel's center with size of the `itemExtent` and `magnification`.
   Widget _centerColorShaderMaskWrapper({required Widget? wheel}) {
     return ShaderMask(
       blendMode: BlendMode.srcATop,
       shaderCallback: (Rect bounds) {
         final v = (1 -
                 (widget.style.itemExtent * widget.style.magnification) /
-                    widget.style.height) *
+                    widget.style.size) *
             .5;
 
         return LinearGradient(

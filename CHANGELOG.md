@@ -14,3 +14,9 @@ This release contains the `WheelPicker` widget with `WheelPickerController` and 
 ## Version 0.0.3:
 
 - Updated package pubspec to have the repository instead of the homepage.
+
+## Version 0.0.4:
+
+- Added support for horizontal scrolling.
+- **Breaking Change**: Removed `width` and `height` parameters.
+- **New Feature**: Introduced `size` parameter for specifying wheel size for both scroll directions.

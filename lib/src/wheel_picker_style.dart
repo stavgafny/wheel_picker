@@ -5,8 +5,7 @@ import 'package:flutter/material.dart';
 /// This class allows you to customize the appearance and behavior of the
 /// WheelPicker widget, including dimensions, item extent, and animation style.
 class WheelPickerStyle {
-  static const _defaultWidth = 50.0;
-  static const _defaultHeight = 150.0;
+  static const _defaultSize = 150.0;
   static const _defaultItemExtent = 20.0;
   static const _defaultDiameterRatio = 1.0;
   static const _defaultSqueeze = 1.0;
@@ -17,13 +16,10 @@ class WheelPickerStyle {
     curve: Curves.decelerate,
   );
 
-  /// The width of the WheelPicker widget.
-  final double width;
+  /// The size of the WheelPicker widget, (vertical height or horizontal width).
+  final double size;
 
-  /// The height of the WheelPicker widget.
-  final double height;
-
-  /// The extent of each item in the WheelPicker. It determines the height of
+  /// The extent of each item in the WheelPicker. It determines the size of
   /// each item displayed in the wheel.
   final double itemExtent;
 
@@ -49,8 +45,7 @@ class WheelPickerStyle {
   /// This class allows you to customize the appearance and behavior of the
   /// WheelPicker widget, including dimensions, item extent, and animation style.
   const WheelPickerStyle({
-    this.width = _defaultWidth,
-    this.height = _defaultHeight,
+    this.size = _defaultSize,
     this.itemExtent = _defaultItemExtent,
     this.diameterRatio = _defaultDiameterRatio,
     this.squeeze = _defaultSqueeze,
@@ -65,8 +60,7 @@ class WheelPickerStyle {
   /// Creates a copy of the current [WheelPickerStyle] with the specified
   /// properties overridden.
   WheelPickerStyle copyWith({
-    double? width,
-    double? height,
+    double? size,
     double? itemExtent,
     double? diameterRatio,
     double? squeeze,
@@ -75,8 +69,7 @@ class WheelPickerStyle {
     WheelShiftAnimationStyle? shiftAnimationStyle,
   }) {
     return WheelPickerStyle(
-      width: width ?? this.width,
-      height: height ?? this.height,
+      size: size ?? this.size,
       itemExtent: itemExtent ?? this.itemExtent,
       diameterRatio: diameterRatio ?? this.diameterRatio,
       squeeze: squeeze ?? this.squeeze,
@@ -88,7 +81,7 @@ class WheelPickerStyle {
 
   @override
   String toString() {
-    return 'WheelPickerStyle(width: $width, height: $height, itemExtent: $itemExtent, diameterRatio: $diameterRatio, squeeze: $squeeze, surroundingOpacity: $surroundingOpacity, magnification: $magnification, shiftAnimationStyle: $shiftAnimationStyle)';
+    return 'WheelPickerStyle(size: $size, itemExtent: $itemExtent, diameterRatio: $diameterRatio, squeeze: $squeeze, surroundingOpacity: $surroundingOpacity, magnification: $magnification, shiftAnimationStyle: $shiftAnimationStyle)';
   }
 }
 

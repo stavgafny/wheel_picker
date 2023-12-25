@@ -43,7 +43,7 @@ class _WheelPickerExampleState extends State<WheelPickerExample> {
   Widget build(BuildContext context) {
     const textStyle = TextStyle(fontSize: 26.0, height: 1.5);
     final wheelStyle = WheelPickerStyle(
-      height: 200,
+      size: 200,
       itemExtent: textStyle.fontSize! * textStyle.height!, // Text height
       squeeze: 1.25,
       diameterRatio: .8,
