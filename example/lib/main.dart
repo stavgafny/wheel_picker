@@ -29,14 +29,14 @@ class WheelPickerExample extends StatefulWidget {
 
 class _WheelPickerExampleState extends State<WheelPickerExample> {
   final now = TimeOfDay.now();
-  late final hoursWheel = WheelPickerController(
+  late final _hoursWheel = WheelPickerController(
     itemCount: 12,
     initialIndex: now.hour % 12,
   );
-  late final minutesWheel = WheelPickerController(
+  late final _minutesWheel = WheelPickerController(
     itemCount: 60,
     initialIndex: now.minute,
-    mounts: [hoursWheel],
+    mounts: [_hoursWheel],
   );
 
   @override
@@ -55,47 +55,46 @@ class _WheelPickerExampleState extends State<WheelPickerExample> {
       return Text("$index".padLeft(2, '0'), style: textStyle);
     }
 
+    final timeWheels = <Widget>[
+      for (final wheelController in [_hoursWheel, _minutesWheel])
+        WheelPicker(
+          builder: itemBuilder,
+          controller: wheelController,
+          looping: wheelController == _minutesWheel,
+          style: wheelStyle,
+          selectedIndexColor: Colors.redAccent,
+        ),
+    ];
+    timeWheels.insert(1, const Text(":", style: textStyle));
+
+    final amPmWheel = WheelPicker(
+      itemCount: 2,
+      builder: (context, index) {
+        return Text(["AM", "PM"][index], style: textStyle);
+      },
+      initialIndex: (now.period == DayPeriod.am) ? 0 : 1,
+      looping: false,
+      style: wheelStyle.copyWith(
+        shiftAnimationStyle: const WheelShiftAnimationStyle(
+          duration: Duration(seconds: 1),
+          curve: Curves.bounceOut,
+        ),
+      ),
+    );
+
     return SizedBox(
-      width: 200.0,
+      width: wheelStyle.size,
       child: Stack(
         fit: StackFit.expand,
         children: [
           _centerBar(context),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Row(
-                children: [
-                  WheelPicker(
-                    builder: itemBuilder,
-                    controller: hoursWheel,
-                    looping: false,
-                    style: wheelStyle,
-                    selectedIndexColor: Colors.redAccent,
-                  ),
-                  const Text(":", style: textStyle),
-                  WheelPicker(
-                    builder: itemBuilder,
-                    controller: minutesWheel,
-                    style: wheelStyle,
-                    enableTap: true,
-                    selectedIndexColor: Colors.redAccent,
-                  )
-                ],
-              ),
-              WheelPicker(
-                itemCount: 2,
-                builder: (context, index) {
-                  return Text(["AM", "PM"][index], style: textStyle);
-                },
-                initialIndex: (now.period == DayPeriod.am) ? 0 : 1,
-                looping: false,
-                style: wheelStyle.copyWith(
-                    shiftAnimationStyle: const WheelShiftAnimationStyle(
-                  duration: Duration(seconds: 1),
-                  curve: Curves.bounceOut,
-                )),
+              ...timeWheels,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                child: amPmWheel,
               ),
             ],
           ),
@@ -106,8 +105,9 @@ class _WheelPickerExampleState extends State<WheelPickerExample> {
 
   @override
   void dispose() {
-    hoursWheel.dispose();
-    minutesWheel.dispose();
+    // Don't forget to dispose the controllers at the end.
+    _hoursWheel.dispose();
+    _minutesWheel.dispose();
     super.dispose();
   }
 

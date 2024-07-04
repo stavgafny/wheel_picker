@@ -20,3 +20,9 @@ This release contains the `WheelPicker` widget with `WheelPickerController` and 
 - Added support for horizontal scrolling.
 - **Breaking Change**: Removed `width` and `height` parameters.
 - **New Feature**: Introduced `size` parameter for specifying wheel size for both scroll directions.
+
+## Version 0.0.5:
+
+Added support for updating `itemCount` and more control for moving between the wheel.
+- Added controller's `.shiftTo` and `.setCurrent` methods.
+- `itemCount` can now be changed using the wheel picker controller or reactively through the wheel picker widget.

@@ -9,6 +9,8 @@ part of './wheel_picker_controller.dart';
 /// - Easily integrates with a controller for precise control and synchronization.
 /// - Provides the ability to highlight the selected item with a color shader.
 ///
+/// For more control, use it with the `WheelPickerController`.
+///
 /// Usage:
 /// `WheelPicker` is highly configurable and can be adapted to different use cases by specifying the builder function, initial settings, and style properties. It's a valuable component for creating user-friendly and visually appealing selection interfaces in your Flutter applications.
 ///
@@ -116,7 +118,8 @@ class _WheelPickerState extends State<WheelPicker> {
   late final WheelPickerController _controller = widget.controller ??
       WheelPickerController(
         itemCount: widget.itemCount!,
-        initialIndex: widget.initialIndex ?? 0,
+        initialIndex:
+            widget.initialIndex ?? WheelPickerController._defaultInitialIndex,
       );
 
   /// Retrieves the range (item count) from the already initialized [_controller].
@@ -141,6 +144,13 @@ class _WheelPickerState extends State<WheelPicker> {
   @override
   void didUpdateWidget(covariant WheelPicker oldWidget) {
     _controller._setProps(widget.looping, widget.style.shiftAnimationStyle);
+
+    // In the case the widget's itemCount property is given then update the internal controller's itemCount.
+    if (widget.itemCount != null && widget.itemCount != _controller.itemCount) {
+      _controller.itemCount = widget.itemCount!;
+      // Also update the internal controller's current to its initialIndex.
+      _controller.setCurrent(_controller.initialIndex);
+    }
 
     super.didUpdateWidget(oldWidget);
   }
