@@ -2,7 +2,7 @@
 
 A superset version of original [ListWheelScrollView](https://api.flutter.dev/flutter/widgets/ListWheelScrollView-class.html) for easily creating wheel scroll input.
 
-[![Flutter](https://img.shields.io/badge/Platform-Flutter-blue.svg)](https://flutter.dev/) [![Pub](https://img.shields.io/badge/pub-v0.0.5-orange.svg)](https://pub.dev/packages/wheel_picker)
+[![Flutter](https://img.shields.io/badge/Platform-Flutter-blue.svg)](https://flutter.dev/) [![Pub](https://img.shields.io/badge/pub-v0.1.0-orange.svg)](https://pub.dev/packages/wheel_picker)
 
 <div style="display: flex; flex-direction: row;">
     <img src="https://raw.githubusercontent.com/stavgafny/wheel_picker/main/doc/counter.gif" alt="Left Gif" width="30%">
@@ -25,7 +25,7 @@ Add it to your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  wheel_picker: ^0.0.5
+  wheel_picker: ^0.1.0
 ```
 
 Install packages from the command line:
@@ -39,6 +39,17 @@ flutter packages get
 To use package, just import package `import 'package:wheel_picker/wheel_picker.dart';`
 
 ## Example
+
+Here's a quick example to get you started:
+```dart
+const daysOfWeek = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+return WheelPicker(
+  itemCount: 7,
+  builder: (context, index) => Text(daysOfWeek[index]),
+  selectedIndexColor: Colors.orange,
+  looping: false,
+);
+```
 
 ### Basic (Left Gif)
 
@@ -68,7 +79,6 @@ class WheelPickerExample extends StatelessWidget {
         print("On index $index");
       },
       style: WheelPickerStyle(
-        height: 300,
         itemExtent: textStyle.fontSize! * textStyle.height!, // Text height
         squeeze: 1.25,
         diameterRatio: .8,

@@ -43,7 +43,6 @@ class _WheelPickerExampleState extends State<WheelPickerExample> {
   Widget build(BuildContext context) {
     const textStyle = TextStyle(fontSize: 26.0, height: 1.5);
     final wheelStyle = WheelPickerStyle(
-      size: 200,
       itemExtent: textStyle.fontSize! * textStyle.height!, // Text height
       squeeze: 1.25,
       diameterRatio: .8,
@@ -57,48 +56,55 @@ class _WheelPickerExampleState extends State<WheelPickerExample> {
 
     final timeWheels = <Widget>[
       for (final wheelController in [_hoursWheel, _minutesWheel])
-        WheelPicker(
-          builder: itemBuilder,
-          controller: wheelController,
-          looping: wheelController == _minutesWheel,
-          style: wheelStyle,
-          selectedIndexColor: Colors.redAccent,
+        Expanded(
+          child: WheelPicker(
+            builder: itemBuilder,
+            controller: wheelController,
+            looping: wheelController == _minutesWheel,
+            style: wheelStyle,
+            selectedIndexColor: Colors.redAccent,
+          ),
         ),
     ];
     timeWheels.insert(1, const Text(":", style: textStyle));
 
-    final amPmWheel = WheelPicker(
-      itemCount: 2,
-      builder: (context, index) {
-        return Text(["AM", "PM"][index], style: textStyle);
-      },
-      initialIndex: (now.period == DayPeriod.am) ? 0 : 1,
-      looping: false,
-      style: wheelStyle.copyWith(
-        shiftAnimationStyle: const WheelShiftAnimationStyle(
-          duration: Duration(seconds: 1),
-          curve: Curves.bounceOut,
+    final amPmWheel = Expanded(
+      child: WheelPicker(
+        itemCount: 2,
+        builder: (context, index) {
+          return Text(["AM", "PM"][index], style: textStyle);
+        },
+        initialIndex: (now.period == DayPeriod.am) ? 0 : 1,
+        looping: false,
+        style: wheelStyle.copyWith(
+          shiftAnimationStyle: const WheelShiftAnimationStyle(
+            duration: Duration(seconds: 1),
+            curve: Curves.bounceOut,
+          ),
         ),
       ),
     );
 
-    return SizedBox(
-      width: wheelStyle.size,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          _centerBar(context),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ...timeWheels,
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                child: amPmWheel,
+    return Center(
+      child: SizedBox(
+        width: 200.0,
+        height: 200.0,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            _centerBar(context),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+              child: Row(
+                children: [
+                  ...timeWheels,
+                  const SizedBox(width: 6.0),
+                  amPmWheel,
+                ],
               ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }

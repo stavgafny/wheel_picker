@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 
 /// WheelPicker styling options.
 ///
-/// This class allows you to customize the appearance and behavior of the
-/// WheelPicker widget, including dimensions, item extent, and animation style.
+/// This class allows you to customize the appearance of the WheelPicker widget.
 class WheelPickerStyle {
-  static const _defaultSize = 150.0;
   static const _defaultItemExtent = 20.0;
   static const _defaultDiameterRatio = 1.0;
   static const _defaultSqueeze = 1.0;
@@ -15,9 +13,6 @@ class WheelPickerStyle {
     duration: Duration(milliseconds: 200),
     curve: Curves.decelerate,
   );
-
-  /// The size of the WheelPicker widget, (vertical height or horizontal width).
-  final double size;
 
   /// The extent of each item in the WheelPicker. It determines the size of
   /// each item displayed in the wheel.
@@ -45,7 +40,6 @@ class WheelPickerStyle {
   /// This class allows you to customize the appearance and behavior of the
   /// WheelPicker widget, including dimensions, item extent, and animation style.
   const WheelPickerStyle({
-    this.size = _defaultSize,
     this.itemExtent = _defaultItemExtent,
     this.diameterRatio = _defaultDiameterRatio,
     this.squeeze = _defaultSqueeze,
@@ -60,7 +54,6 @@ class WheelPickerStyle {
   /// Creates a copy of the current [WheelPickerStyle] with the specified
   /// properties overridden.
   WheelPickerStyle copyWith({
-    double? size,
     double? itemExtent,
     double? diameterRatio,
     double? squeeze,
@@ -69,7 +62,6 @@ class WheelPickerStyle {
     WheelShiftAnimationStyle? shiftAnimationStyle,
   }) {
     return WheelPickerStyle(
-      size: size ?? this.size,
       itemExtent: itemExtent ?? this.itemExtent,
       diameterRatio: diameterRatio ?? this.diameterRatio,
       squeeze: squeeze ?? this.squeeze,
@@ -81,7 +73,7 @@ class WheelPickerStyle {
 
   @override
   String toString() {
-    return 'WheelPickerStyle(size: $size, itemExtent: $itemExtent, diameterRatio: $diameterRatio, squeeze: $squeeze, surroundingOpacity: $surroundingOpacity, magnification: $magnification, shiftAnimationStyle: $shiftAnimationStyle)';
+    return 'WheelPickerStyle(itemExtent: $itemExtent, diameterRatio: $diameterRatio, squeeze: $squeeze, surroundingOpacity: $surroundingOpacity, magnification: $magnification, shiftAnimationStyle: $shiftAnimationStyle)';
   }
 }
 

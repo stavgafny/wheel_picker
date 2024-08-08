@@ -26,3 +26,11 @@ This release contains the `WheelPicker` widget with `WheelPickerController` and 
 Added support for updating `itemCount` and more control for moving between the wheel.
 - Added controller's `.shiftTo` and `.setCurrent` methods.
 - `itemCount` can now be changed using the wheel picker controller or reactively through the wheel picker widget.
+
+## Version 0.1.0:
+
+**Breaking Change**: The `size` property has been removed.
+- Developers now have full control over the widget's size and constraints. By default, the widget will take up as much space as possible.
+- Updated the README to reflect the changes.
+
+

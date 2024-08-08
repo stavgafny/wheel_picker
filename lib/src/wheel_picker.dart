@@ -11,6 +11,8 @@ part of './wheel_picker_controller.dart';
 ///
 /// For more control, use it with the `WheelPickerController`.
 ///
+/// > _Note: If not wrapped or constrained, the widget will take up all available space._
+///
 /// Usage:
 /// `WheelPicker` is highly configurable and can be adapted to different use cases by specifying the builder function, initial settings, and style properties. It's a valuable component for creating user-friendly and visually appealing selection interfaces in your Flutter applications.
 ///
@@ -32,8 +34,8 @@ part of './wheel_picker_controller.dart';
 ///   },
 ///   style: WheelPickerStyle(
 ///     // Customize the appearance and behavior.
-///     size: 150,
 ///     itemExtent: 50,
+///     diameterRatio: .8
 ///     // ...
 ///   ),
 /// )
@@ -180,14 +182,12 @@ class _WheelPickerState extends State<WheelPicker> {
       wheel = _centerColorShaderMaskWrapper(wheel: wheel);
     }
 
-    return _scrollDirectionWrapper(
+    wheel = _scrollDirectionWrapper(
       rotateClockwise: false,
-      child: SizedBox(
-        width: widget.style.itemExtent * widget.style.magnification,
-        height: widget.style.size,
-        child: wheel,
-      ),
+      child: wheel,
     );
+
+    return wheel;
   }
 
   /// Factory method that updates possible [widget.controller] and calls possible [widget.onIndexChanged]
@@ -255,53 +255,70 @@ class _WheelPickerState extends State<WheelPicker> {
     );
   }
 
-  /// Wrapps wheel with a [GestureDetector] to register tap events and based on
-  /// the tap location it shifts the wheel.
+  /// Wraps the [wheel] widget with a [GestureDetector] to register tap events and
+  /// shift the wheel based on the tap location.
   ///
-  /// The way this is done is by getting the tap location offset from the center
-  /// and if it is above half the itemExtent then it shifts up or down according
-  /// to whether an offset is positive or negative.
-  /// If the offset is smaller then half the itemExtent, it does nothing.
+  /// The wheel's size is considered as a ratio from -1 to 1, with 0 representing the center.
+  /// When a tap is detected, the tap location is converted into this ratio as an offset from the center.
+  ///
+  /// If the offset is smaller than the wheel's `itemExtent` ratio (referred to as `offCenterRatio`),
+  /// no action is taken.
+  ///
+  /// If the offset is not smaller, the wheel shifts up or down depending on whether the offset
+  /// is positive or negative.
   Widget _tapDetectsWrapper({required Widget wheel}) {
-    final offCenterSize = (widget.style.itemExtent * .5) / widget.style.size;
-    return GestureDetector(
-      onTapUp: (details) {
-        final tapLocation = details.localPosition.dy;
-        final normalizedLocation = (tapLocation / widget.style.size) - .5;
-        if (normalizedLocation > offCenterSize) {
-          _controller.shiftDown();
-        } else if (normalizedLocation < -offCenterSize) {
-          _controller.shiftUp();
-        }
+    // The layout builder is for getting the maxHeight which is the wheel size.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final wheelSize = constraints.maxHeight;
+        final offCenterRatio = (widget.style.itemExtent / wheelSize);
+        return GestureDetector(
+          onTapUp: (details) {
+            final tapLocation = details.localPosition.dy;
+            final normalizedLocation = -1.0 + ((tapLocation / wheelSize) * 2.0);
+
+            if (normalizedLocation.abs() >= offCenterRatio) {
+              normalizedLocation > 0
+                  ? _controller.shiftDown()
+                  : _controller.shiftUp();
+            }
+          },
+          child: wheel,
+        );
       },
-      child: wheel,
     );
   }
 
   /// Wrapps wheel with a [ShaderMask] of [BlendMode.srcATop] and places it on top
   /// of the wheel's center with size of the `itemExtent` and `magnification`.
   Widget _centerColorShaderMaskWrapper({required Widget? wheel}) {
-    return ShaderMask(
-      blendMode: BlendMode.srcATop,
-      shaderCallback: (Rect bounds) {
-        final v = (1 -
-                (widget.style.itemExtent * widget.style.magnification) /
-                    widget.style.size) *
-            .5;
+    return LayoutBuilder(
+      // The layout builder is for getting the maxHeight which is the wheel size.
+      builder: (context, constraints) {
+        final wheelSize = constraints.maxHeight;
+        final itemView = widget.style.itemExtent * widget.style.magnification;
 
-        return LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          stops: [v, v, 1 - v, 1 - v],
-          colors: [
-            Colors.transparent,
-            widget.selectedIndexColor!,
-            widget.selectedIndexColor!,
-            Colors.transparent,
-          ],
-        ).createShader(bounds);
+        // Shader stops.
+        final v = (1 - itemView / wheelSize) * .5;
+
+        return ShaderMask(
+          blendMode: BlendMode.srcATop,
+          shaderCallback: (Rect bounds) {
+            return LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              stops: [v, v, 1 - v, 1 - v],
+              colors: [
+                Colors.transparent,
+                widget.selectedIndexColor!,
+                widget.selectedIndexColor!,
+                Colors.transparent,
+              ],
+            ).createShader(bounds);
+          },
+          child: wheel,
+        );
       },
-      child: wheel,
     );
   }
 }
