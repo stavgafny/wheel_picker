@@ -2,7 +2,7 @@
 
 A superset version of original [ListWheelScrollView](https://api.flutter.dev/flutter/widgets/ListWheelScrollView-class.html) for easily creating wheel scroll input.
 
-[![Flutter](https://img.shields.io/badge/Platform-Flutter-blue.svg)](https://flutter.dev/) [![Pub](https://img.shields.io/badge/pub-v0.1.0-orange.svg)](https://pub.dev/packages/wheel_picker)
+[![Flutter](https://img.shields.io/badge/Platform-Flutter-blue.svg)](https://flutter.dev/) [![Pub](https://img.shields.io/badge/pub-v0.1.1-orange.svg)](https://pub.dev/packages/wheel_picker)
 
 <div style="display: flex; flex-direction: row;">
     <img src="https://raw.githubusercontent.com/stavgafny/wheel_picker/main/doc/counter.gif" alt="Left Gif" width="30%">
@@ -25,7 +25,7 @@ Add it to your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  wheel_picker: ^0.1.0
+  wheel_picker: ^0.1.1
 ```
 
 Install packages from the command line:
@@ -53,7 +53,7 @@ return WheelPicker(
 
 ### Basic (Left Gif)
 
-For more controller you can attach a controller and adjust it to your liking:
+For more control, you can attach a controller and adjust it to your liking:
 
 ```dart
 import 'dart:async';
@@ -112,7 +112,7 @@ void main() => runApp(const MyApp());
 
 ### Advanced (Right Gif)
 
-For more control, you can also mount controllers, making them shift each other. See [example](example/lib/main.dart).
+For more advanced usage, you can also mount controllers, making them shift each other. See [example](example/lib/main.dart).
 
 <br />
 <br />

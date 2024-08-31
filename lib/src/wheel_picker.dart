@@ -1,4 +1,9 @@
-part of './wheel_picker_controller.dart';
+import 'dart:math' as math;
+
+import 'package:flutter/material.dart';
+import './wheel_picker_style.dart';
+
+part './wheel_picker_controller.dart';
 
 /// A customizable scrolling wheel interface for selecting items, such as numbers, dates, or any value of your choice.
 ///

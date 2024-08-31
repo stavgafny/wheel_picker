@@ -1,9 +1,4 @@
-import 'dart:math' as math;
-
-import 'package:flutter/material.dart';
-import './wheel_picker_style.dart';
-
-part './wheel_picker.dart';
+part of './wheel_picker.dart';
 
 /// Controller for managing and synchronizing `WheelPicker` widgets.
 ///

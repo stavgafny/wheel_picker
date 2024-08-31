@@ -33,4 +33,8 @@ Added support for updating `itemCount` and more control for moving between the w
 - Developers now have full control over the widget's size and constraints. By default, the widget will take up as much space as possible.
 - Updated the README to reflect the changes.
 
+## Version 0.1.1:
+
+- Refactored import structure: integrated `WheelPickerController` as part of `WheelPicker`.
+- Updated README file to fix typos and improve clarity.
 
