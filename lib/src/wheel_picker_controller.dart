@@ -1,5 +1,14 @@
 part of './wheel_picker.dart';
 
+/// Represents the type of interaction with the WheelPicker that changes its index.
+///
+/// The available types are:
+/// - [drag]: The index changes when the wheel is dragged by the user.
+/// - [tap]: The index changes when the user taps on the wheel.
+/// - [control]: The index changes programmatically through `WheelPickerController` methods.
+/// - [mount]: The index changes due to external mounting when the WheelPicker loops.
+enum WheelPickerInteractionType { drag, tap, control, mount }
+
 /// Controller for managing and synchronizing `WheelPicker` widgets.
 ///
 /// The `WheelPickerController` allows you to:
@@ -16,6 +25,7 @@ part of './wheel_picker.dart';
 /// - Use its methods to manipulate the selected item index and scrolling behavior.
 class WheelPickerController {
   static const _defaultInitialIndex = 0;
+  static const _defaultInteractionType = WheelPickerInteractionType.drag;
 
   /// The total number of items in the wheel - (can be changed).
   int itemCount;
@@ -34,6 +44,9 @@ class WheelPickerController {
 
   /// The previous cycle of the wheel (for looped scrolling).
   int _previousCycle = 0;
+
+  /// Defines the type of interaction with the attached `WheelPicker` widget that changes the current index.
+  WheelPickerInteractionType _interactionType = WheelPickerController._defaultInteractionType;
 
   /// The animation style used for shifting the wheel.
   WheelShiftAnimationStyle _shiftAnimationStyle = const WheelPickerStyle().shiftAnimationStyle;
@@ -103,51 +116,30 @@ class WheelPickerController {
   ///
   /// Use this method to shift attached controllers based on the given `direction`.
   ///
-  /// * This method is intended for use by the controller itself.
+  /// * This method is intended for internal use by the [WheelPicker] widget.
   void _shiftMounts(VerticalDirection direction) {
     final shiftMethod = direction == VerticalDirection.down
-        ? (WheelPickerController mount) => mount.shiftDown()
-        : (WheelPickerController mount) => mount.shiftUp();
+        ? (WheelPickerController w) => w._interactionShiftDown(WheelPickerInteractionType.mount)
+        : (WheelPickerController w) => w._interactionShiftUp(WheelPickerInteractionType.mount);
 
     for (final mount in _mounts) {
       shiftMethod(mount);
     }
   }
 
-  /// Shifts the wheel up by one item.
-  ///
-  /// If the wheel is not looping and already at the top, this does nothing.
-  Future<void> shiftUp() async {
-    return await shiftBy(-1);
+  /// Sets the interaction type.
+  /// This is used to record how the index change occurred (e.g., drag, tap, programmatic control).
+  /// * This method is intended for internal use by the [WheelPicker] widget.
+  void _setInteractionType(WheelPickerInteractionType interactionType) {
+    _interactionType = interactionType;
   }
 
-  /// Shifts the wheel down by one item.
+  /// Shifts the wheel to the specified index, and records the interaction type.
   ///
-  /// If the wheel is not looping and already at the bottom, this does nothing.
-  Future<void> shiftDown() async {
-    return await shiftBy(1);
-  }
-
-  /// Shifts the wheel by a specified number of items.
-  ///
-  /// Parameters:
-  /// - `steps`: The number of items to shift. A positive value shifts down, and a negative value shifts up.
-  Future<void> shiftBy(int steps) async {
+  /// * This method is intended for internal use by the [WheelPicker] widget.
+  Future<void> _interactionShiftTo(int index, WheelPickerInteractionType interactionType) async {
     if (!_hasClients) return;
-    return await _shiftController(
-      this,
-      steps: steps,
-      shiftAnimationStyle: _shiftAnimationStyle,
-      relativeToCurrent: true,
-    );
-  }
-
-  /// Shifts the wheel to the specified index.
-  ///
-  /// Parameters:
-  /// - `index`: The item number to jump to ranging from 0 to `itemCount` - 1.
-  Future<void> shiftTo(int index) async {
-    if (!_hasClients) return;
+    _setInteractionType(interactionType);
     return await _shiftController(
       this,
       steps: _capIndex(index),
@@ -156,12 +148,67 @@ class WheelPickerController {
     );
   }
 
+  /// Shifts the wheel by a specified number of items, and records the interaction type.
+  ///
+  /// * This method is intended for internal use by the [WheelPicker] widget.
+  Future<void> _interactionShiftBy(int steps, WheelPickerInteractionType interactionType) async {
+    if (!_hasClients) return;
+    _setInteractionType(interactionType);
+    return await _shiftController(
+      this,
+      steps: steps,
+      shiftAnimationStyle: _shiftAnimationStyle,
+      relativeToCurrent: true,
+    );
+  }
+
+  /// Shifts the wheel up by one item, and records the interaction type.
+  ///
+  /// * This method is intended for internal use by the [WheelPicker] widget.
+  Future<void> _interactionShiftUp(WheelPickerInteractionType interactionType) async {
+    return await _interactionShiftBy(-1, interactionType);
+  }
+
+  /// Shifts the wheel down by one item, and records the interaction type.
+  ///
+  /// * This method is intended for internal use by the [WheelPicker] widget.
+  Future<void> _interactionShiftDown(WheelPickerInteractionType interactionType) async {
+    return await _interactionShiftBy(1, interactionType);
+  }
+
+  /// Shifts the wheel up by one item.
+  Future<void> shiftUp() async {
+    return await _interactionShiftUp(WheelPickerInteractionType.control);
+  }
+
+  /// Shifts the wheel down by one item.
+  Future<void> shiftDown() async {
+    return await _interactionShiftDown(WheelPickerInteractionType.control);
+  }
+
+  /// Shifts the wheel by a specified number of items.
+  ///
+  /// Parameters:
+  /// - `steps`: The number of items to shift. A positive value shifts down, and a negative value shifts up.
+  Future<void> shiftBy(int steps) async {
+    return _interactionShiftBy(steps, WheelPickerInteractionType.control);
+  }
+
+  /// Shifts the wheel to the specified index.
+  ///
+  /// Parameters:
+  /// - `index`: The item number to jump to ranging from 0 to `itemCount` - 1.
+  Future<void> shiftTo(int index) async {
+    return _interactionShiftTo(index, WheelPickerInteractionType.control);
+  }
+
   /// Sets the current item to the specified index.
   ///
   /// Parameters:
   /// - `index`: The item number to jump to ranging from 0 to `itemCount` - 1
   Future<void> setCurrent(int index) async {
     if (!_hasClients) return;
+    _setInteractionType(WheelPickerInteractionType.control);
     _jumpController(this, _capIndex(index));
   }
 

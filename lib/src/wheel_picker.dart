@@ -33,9 +33,9 @@ part './wheel_picker_controller.dart';
 ///   looping: true, // Enable looping behavior.
 ///   selectedIndexColor: Colors.blue, // Color to highlight the selected item.
 ///   enableTap: true, // Allow tap gestures for navigation.
-///   onIndexChanged: (index) {
+///   onIndexChanged: (index, interactionType) {
 ///     // Handle index changes.
-///     print('Selected index: $index');
+///     print('Selected index: $index from interaction: ${interactionType.name}');
 ///   },
 ///   style: WheelPickerStyle(
 ///     // Customize the appearance and behavior.
@@ -76,8 +76,10 @@ class WheelPicker extends StatefulWidget {
   /// Whether to enable tap gestures for item selection.
   final bool enableTap;
 
-  /// Callback function that is called for when the selected item index changes.
-  final void Function(int index)? onIndexChanged;
+  /// Callback function triggered when the selected item index changes.
+  ///
+  /// Provides the updated [index] and the [interactionType] that caused the change.
+  final void Function(int index, WheelPickerInteractionType interactionType)? onIndexChanged;
 
   /// Defines the appearance and behavior style for the `WheelPicker`.
   final WheelPickerStyle style;
@@ -174,12 +176,9 @@ class _WheelPickerState extends State<WheelPicker> {
   Widget build(BuildContext context) {
     final range = _getRange();
 
-    Widget wheel =
-        widget.looping ? _loopingWheel(context, range) : _nonLoopingWheel(context, range);
+    Widget wheel = (widget.looping ? _loopingWheel : _nonLoopingWheel)(context, range);
 
-    if (widget.enableTap) {
-      wheel = _tapDetectsWrapper(wheel: wheel);
-    }
+    wheel = _gestureDetectsWrapper(wheel: wheel, enableTap: widget.enableTap);
 
     if (widget.selectedIndexColor != null) {
       wheel = _centerColorShaderMaskWrapper(wheel: wheel);
@@ -198,7 +197,7 @@ class _WheelPickerState extends State<WheelPicker> {
   void Function(int)? _onIndexChangedMethodFactory(int range) {
     return (int index) {
       _controller._update(index);
-      widget.onIndexChanged?.call(index % range);
+      widget.onIndexChanged?.call(index % range, _controller._interactionType);
     };
   }
 
@@ -258,32 +257,38 @@ class _WheelPickerState extends State<WheelPicker> {
     );
   }
 
-  /// Wraps the [wheel] widget with a [GestureDetector] to register tap events and
-  /// shift the wheel based on the tap location.
+  /// Wraps the [wheel] widget with a [GestureDetector] to detect tap and drag gestures.
   ///
-  /// The wheel's size is considered as a ratio from -1 to 1, with 0 representing the center.
-  /// When a tap is detected, the tap location is converted into this ratio as an offset from the center.
+  /// If [enableTap] is true, the method handles tap interactions to shift the wheel.
+  /// The tap location is calculated as a ratio from -1 to 1, with 0 representing the center of the wheel.
+  /// If the tap's offset exceeds the wheel's `itemExtent` ratio, the wheel will shift either up or down,
+  /// depending on the direction of the offset. A negative offset (above center) shifts the wheel up,
+  /// and a positive offset (below center) shifts it down. The interaction type is set to `WheelPickerInteractionType.tap`
+  /// when a tap is detected.
   ///
-  /// If the offset is smaller than the wheel's `itemExtent` ratio (referred to as `offCenterRatio`),
-  /// no action is taken.
+  /// If [enableTap] is false, tap interactions are disabled, and no shift occurs on tap.
   ///
-  /// If the offset is not smaller, the wheel shifts up or down depending on whether the offset
-  /// is positive or negative.
-  Widget _tapDetectsWrapper({required Widget wheel}) {
+  /// The drag interaction sets the interaction type to `drag`.
+  Widget _gestureDetectsWrapper({required Widget wheel, required bool enableTap}) {
     // The layout builder is for getting the maxHeight which is the wheel size.
     return LayoutBuilder(
       builder: (context, constraints) {
         final wheelSize = constraints.maxHeight;
         final offCenterRatio = (widget.style.itemExtent / wheelSize);
         return GestureDetector(
-          onTapUp: (details) {
-            final tapLocation = details.localPosition.dy;
-            final normalizedLocation = -1.0 + ((tapLocation / wheelSize) * 2.0);
+          onTapUp: enableTap
+              ? (details) {
+                  final tapLocation = details.localPosition.dy;
+                  final normalizedLocation = -1.0 + ((tapLocation / wheelSize) * 2.0);
 
-            if (normalizedLocation.abs() >= offCenterRatio) {
-              normalizedLocation > 0 ? _controller.shiftDown() : _controller.shiftUp();
-            }
-          },
+                  if (normalizedLocation.abs() >= offCenterRatio) {
+                    normalizedLocation > 0
+                        ? _controller._interactionShiftDown(WheelPickerInteractionType.tap)
+                        : _controller._interactionShiftUp(WheelPickerInteractionType.tap);
+                  }
+                }
+              : null,
+          onPanDown: (details) => _controller._setInteractionType(WheelPickerInteractionType.drag),
           child: wheel,
         );
       },

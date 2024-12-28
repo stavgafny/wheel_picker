@@ -38,3 +38,7 @@ Added support for updating `itemCount` and more control for moving between the w
 - Refactored import structure: integrated `WheelPickerController` as part of `WheelPicker`.
 - Updated README file to fix typos and improve clarity.
 
+## Version 0.2.0:
+
+- **New Feature**: Added support for tracking interaction types (`tap`, `drag`, `control`, `mounted`) during `onIndexChanged`.
+- Improved code structure and organization.
