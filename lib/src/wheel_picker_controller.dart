@@ -35,12 +35,8 @@ class WheelPickerController {
   /// The previous cycle of the wheel (for looped scrolling).
   int _previousCycle = 0;
 
-  /// Indicates whether the wheel should support infinite looping.
-  bool _looping = true;
-
   /// The animation style used for shifting the wheel.
-  WheelShiftAnimationStyle _shiftAnimationStyle =
-      const WheelPickerStyle().shiftAnimationStyle;
+  WheelShiftAnimationStyle _shiftAnimationStyle = const WheelPickerStyle().shiftAnimationStyle;
 
   /// Creates a `WheelPickerController` with optional settings.
   ///
@@ -55,8 +51,7 @@ class WheelPickerController {
     this.initialIndex = WheelPickerController._defaultInitialIndex,
     List<WheelPickerController>? mounts,
   })  : _mounts = mounts ?? [],
-        _scrollController =
-            FixedExtentScrollController(initialItem: initialIndex),
+        _scrollController = FixedExtentScrollController(initialItem: initialIndex),
         _current = initialIndex;
 
   /// Caps index to be ranging from 0 to `itemCount` - 1
@@ -70,7 +65,7 @@ class WheelPickerController {
   /// If [_scrollController] `initialItem` differs from [_current], it updates
   /// the scroll controller by replacing it with a new one and disposing of the previous one.
   ///
-  /// * This method is intended for use by the [WheelPicker] widget.
+  /// * This method is intended for internal use by the [WheelPicker] widget.
   void _attach() {
     if (_scrollController.initialItem != _current) {
       _scrollController.dispose();
@@ -78,11 +73,11 @@ class WheelPickerController {
     }
   }
 
-  /// Sets current instance with `looping` and `shiftAnimationStyle` properties.
+  /// Updates the shift animation style when the controller is attached during `initState`
+  /// or updated during `didUpdateWidget`.
   ///
-  /// * This method is intended for use by the [WheelPicker] widget.
-  void _setProps(bool looping, WheelShiftAnimationStyle shiftAnimationStyle) {
-    _looping = looping;
+  /// * This method is intended for internal use by the [WheelPicker] widget.
+  void _updateShiftAnimationStyle(WheelShiftAnimationStyle shiftAnimationStyle) {
     _shiftAnimationStyle = shiftAnimationStyle;
   }
 
@@ -92,15 +87,13 @@ class WheelPickerController {
   ///
   /// Checks for optional cycle changes and calls [_shiftMounts] accordingly.
   ///
-  /// * This method is intended for use by the [WheelPicker] widget.
+  /// * This method is intended for internal use by the [WheelPicker] widget.
   void _update(int index) {
     if (!_hasClients) return;
     _current = index % itemCount;
     final currentCycle = (index / itemCount).floor();
     if (_previousCycle != currentCycle) {
-      final step = currentCycle > _previousCycle
-          ? VerticalDirection.down
-          : VerticalDirection.up;
+      final step = currentCycle > _previousCycle ? VerticalDirection.down : VerticalDirection.up;
       _shiftMounts(step);
       _previousCycle = currentCycle;
     }
@@ -112,14 +105,12 @@ class WheelPickerController {
   ///
   /// * This method is intended for use by the controller itself.
   void _shiftMounts(VerticalDirection direction) {
-    if (direction == VerticalDirection.down) {
-      for (final mount in _mounts) {
-        mount.shiftDown();
-      }
-    } else {
-      for (final mount in _mounts) {
-        mount.shiftUp();
-      }
+    final shiftMethod = direction == VerticalDirection.down
+        ? (WheelPickerController mount) => mount.shiftDown()
+        : (WheelPickerController mount) => mount.shiftUp();
+
+    for (final mount in _mounts) {
+      shiftMethod(mount);
     }
   }
 
@@ -127,39 +118,40 @@ class WheelPickerController {
   ///
   /// If the wheel is not looping and already at the top, this does nothing.
   Future<void> shiftUp() async {
-    if (!_hasClients) return;
-    if (!_looping && _scrollController.selectedItem == 0) return;
-    return await _shiftController(this, -1, _shiftAnimationStyle);
+    return await shiftBy(-1);
   }
 
   /// Shifts the wheel down by one item.
   ///
   /// If the wheel is not looping and already at the bottom, this does nothing.
   Future<void> shiftDown() async {
-    if (!_hasClients) return;
-    if (!_looping && _scrollController.selectedItem == itemCount - 1) return;
-    return await _shiftController(this, 1, _shiftAnimationStyle);
+    return await shiftBy(1);
   }
 
   /// Shifts the wheel by a specified number of items.
   ///
   /// Parameters:
   /// - `steps`: The number of items to shift. A positive value shifts down, and a negative value shifts up.
-  Future<void> shiftBy({required int steps}) async {
+  Future<void> shiftBy(int steps) async {
     if (!_hasClients) return;
-    return await _shiftController(this, steps, _shiftAnimationStyle);
+    return await _shiftController(
+      this,
+      steps: steps,
+      shiftAnimationStyle: _shiftAnimationStyle,
+      relativeToCurrent: true,
+    );
   }
 
   /// Shifts the wheel to the specified index.
   ///
   /// Parameters:
   /// - `index`: The item number to jump to ranging from 0 to `itemCount` - 1.
-  Future<void> shiftTo({required int index}) async {
+  Future<void> shiftTo(int index) async {
     if (!_hasClients) return;
     return await _shiftController(
       this,
-      _capIndex(index),
-      _shiftAnimationStyle,
+      steps: _capIndex(index),
+      shiftAnimationStyle: _shiftAnimationStyle,
       relativeToCurrent: false,
     );
   }
@@ -197,10 +189,10 @@ class WheelPickerController {
 ///
 /// * Note that this is only supposed to be in the controller scope itself.
 Future<void> _shiftController(
-  WheelPickerController controller,
-  int steps,
-  WheelShiftAnimationStyle shiftAnimationStyle, {
-  bool relativeToCurrent = true,
+  WheelPickerController controller, {
+  required int steps,
+  required WheelShiftAnimationStyle shiftAnimationStyle,
+  required bool relativeToCurrent,
 }) async {
   if (!controller._hasClients) return;
   return await controller._scrollController.animateToItem(

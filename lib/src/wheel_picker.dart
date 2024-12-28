@@ -125,8 +125,7 @@ class _WheelPickerState extends State<WheelPicker> {
   late final WheelPickerController _controller = widget.controller ??
       WheelPickerController(
         itemCount: widget.itemCount!,
-        initialIndex:
-            widget.initialIndex ?? WheelPickerController._defaultInitialIndex,
+        initialIndex: widget.initialIndex ?? WheelPickerController._defaultInitialIndex,
       );
 
   /// Retrieves the range (item count) from the already initialized [_controller].
@@ -140,7 +139,7 @@ class _WheelPickerState extends State<WheelPicker> {
 
     // Attach the controller and configures its behavior.
     _controller._attach();
-    _controller._setProps(widget.looping, widget.style.shiftAnimationStyle);
+    _controller._updateShiftAnimationStyle(widget.style.shiftAnimationStyle);
 
     super.initState();
   }
@@ -150,7 +149,7 @@ class _WheelPickerState extends State<WheelPicker> {
   /// This is to update properties changes with Hot-Reload without needing to Hot-Restart.
   @override
   void didUpdateWidget(covariant WheelPicker oldWidget) {
-    _controller._setProps(widget.looping, widget.style.shiftAnimationStyle);
+    _controller._updateShiftAnimationStyle(widget.style.shiftAnimationStyle);
 
     // In the case the widget's itemCount property is given then update the internal controller's itemCount.
     if (widget.itemCount != null && widget.itemCount != _controller.itemCount) {
@@ -175,9 +174,8 @@ class _WheelPickerState extends State<WheelPicker> {
   Widget build(BuildContext context) {
     final range = _getRange();
 
-    Widget wheel = widget.looping
-        ? _loopingWheel(context, range)
-        : _nonLoopingWheel(context, range);
+    Widget wheel =
+        widget.looping ? _loopingWheel(context, range) : _nonLoopingWheel(context, range);
 
     if (widget.enableTap) {
       wheel = _tapDetectsWrapper(wheel: wheel);
@@ -283,9 +281,7 @@ class _WheelPickerState extends State<WheelPicker> {
             final normalizedLocation = -1.0 + ((tapLocation / wheelSize) * 2.0);
 
             if (normalizedLocation.abs() >= offCenterRatio) {
-              normalizedLocation > 0
-                  ? _controller.shiftDown()
-                  : _controller.shiftUp();
+              normalizedLocation > 0 ? _controller.shiftDown() : _controller.shiftUp();
             }
           },
           child: wheel,
