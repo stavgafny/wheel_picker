@@ -79,7 +79,8 @@ class WheelPicker extends StatefulWidget {
   /// Callback function triggered when the selected item index changes.
   ///
   /// Provides the updated [index] and the [interactionType] that caused the change.
-  final void Function(int index, WheelPickerInteractionType interactionType)? onIndexChanged;
+  final void Function(int index, WheelPickerInteractionType interactionType)?
+      onIndexChanged;
 
   /// Defines the appearance and behavior style for the `WheelPicker`.
   final WheelPickerStyle style;
@@ -127,7 +128,8 @@ class _WheelPickerState extends State<WheelPicker> {
   late final WheelPickerController _controller = widget.controller ??
       WheelPickerController(
         itemCount: widget.itemCount!,
-        initialIndex: widget.initialIndex ?? WheelPickerController._defaultInitialIndex,
+        initialIndex:
+            widget.initialIndex ?? WheelPickerController._defaultInitialIndex,
       );
 
   /// Retrieves the range (item count) from the already initialized [_controller].
@@ -176,7 +178,9 @@ class _WheelPickerState extends State<WheelPicker> {
   Widget build(BuildContext context) {
     final range = _getRange();
 
-    Widget wheel = (widget.looping ? _loopingWheel : _nonLoopingWheel)(context, range);
+    Widget wheel = widget.looping
+        ? _loopingWheel(context, range)
+        : _nonLoopingWheel(context, range);
 
     wheel = _gestureDetectsWrapper(wheel: wheel, enableTap: widget.enableTap);
 
@@ -269,7 +273,8 @@ class _WheelPickerState extends State<WheelPicker> {
   /// If [enableTap] is false, tap interactions are disabled, and no shift occurs on tap.
   ///
   /// The drag interaction sets the interaction type to `drag`.
-  Widget _gestureDetectsWrapper({required Widget wheel, required bool enableTap}) {
+  Widget _gestureDetectsWrapper(
+      {required Widget wheel, required bool enableTap}) {
     // The layout builder is for getting the maxHeight which is the wheel size.
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -279,16 +284,20 @@ class _WheelPickerState extends State<WheelPicker> {
           onTapUp: enableTap
               ? (details) {
                   final tapLocation = details.localPosition.dy;
-                  final normalizedLocation = -1.0 + ((tapLocation / wheelSize) * 2.0);
+                  final normalizedLocation =
+                      -1.0 + ((tapLocation / wheelSize) * 2.0);
 
                   if (normalizedLocation.abs() >= offCenterRatio) {
                     normalizedLocation > 0
-                        ? _controller._interactionShiftDown(WheelPickerInteractionType.tap)
-                        : _controller._interactionShiftUp(WheelPickerInteractionType.tap);
+                        ? _controller._interactionShiftDown(
+                            WheelPickerInteractionType.tap)
+                        : _controller._interactionShiftUp(
+                            WheelPickerInteractionType.tap);
                   }
                 }
               : null,
-          onPanDown: (details) => _controller._setInteractionType(WheelPickerInteractionType.drag),
+          onPanDown: (details) =>
+              _controller._setInteractionType(WheelPickerInteractionType.drag),
           child: wheel,
         );
       },

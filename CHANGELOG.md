@@ -42,3 +42,8 @@ Added support for updating `itemCount` and more control for moving between the w
 
 - **New Feature**: Added support for tracking interaction types (`tap`, `drag`, `control`, `mounted`) during `onIndexChanged`.
 - Improved code structure and organization.
+
+## Version 0.2.1:
+
+- Refined naming for improved clarity.  
+- Reformatted code to align with pub's static analysis standards.

@@ -46,10 +46,12 @@ class WheelPickerController {
   int _previousCycle = 0;
 
   /// Defines the type of interaction with the attached `WheelPicker` widget that changes the current index.
-  WheelPickerInteractionType _interactionType = WheelPickerController._defaultInteractionType;
+  WheelPickerInteractionType _interactionType =
+      WheelPickerController._defaultInteractionType;
 
   /// The animation style used for shifting the wheel.
-  WheelShiftAnimationStyle _shiftAnimationStyle = const WheelPickerStyle().shiftAnimationStyle;
+  WheelShiftAnimationStyle _shiftAnimationStyle =
+      const WheelPickerStyle().shiftAnimationStyle;
 
   /// Creates a `WheelPickerController` with optional settings.
   ///
@@ -64,7 +66,8 @@ class WheelPickerController {
     this.initialIndex = WheelPickerController._defaultInitialIndex,
     List<WheelPickerController>? mounts,
   })  : _mounts = mounts ?? [],
-        _scrollController = FixedExtentScrollController(initialItem: initialIndex),
+        _scrollController =
+            FixedExtentScrollController(initialItem: initialIndex),
         _current = initialIndex;
 
   /// Caps index to be ranging from 0 to `itemCount` - 1
@@ -90,8 +93,8 @@ class WheelPickerController {
   /// or updated during `didUpdateWidget`.
   ///
   /// * This method is intended for internal use by the [WheelPicker] widget.
-  void _updateShiftAnimationStyle(WheelShiftAnimationStyle shiftAnimationStyle) {
-    _shiftAnimationStyle = shiftAnimationStyle;
+  void _updateShiftAnimationStyle(WheelShiftAnimationStyle animationStyle) {
+    _shiftAnimationStyle = animationStyle;
   }
 
   /// Updates the controller with a new selected item index.
@@ -106,7 +109,9 @@ class WheelPickerController {
     _current = index % itemCount;
     final currentCycle = (index / itemCount).floor();
     if (_previousCycle != currentCycle) {
-      final step = currentCycle > _previousCycle ? VerticalDirection.down : VerticalDirection.up;
+      final step = currentCycle > _previousCycle
+          ? VerticalDirection.down
+          : VerticalDirection.up;
       _shiftMounts(step);
       _previousCycle = currentCycle;
     }
@@ -118,9 +123,10 @@ class WheelPickerController {
   ///
   /// * This method is intended for internal use by the [WheelPicker] widget.
   void _shiftMounts(VerticalDirection direction) {
+    const mountInteraction = WheelPickerInteractionType.mount;
     final shiftMethod = direction == VerticalDirection.down
-        ? (WheelPickerController w) => w._interactionShiftDown(WheelPickerInteractionType.mount)
-        : (WheelPickerController w) => w._interactionShiftUp(WheelPickerInteractionType.mount);
+        ? (WheelPickerController m) => m._interactionShiftDown(mountInteraction)
+        : (WheelPickerController m) => m._interactionShiftUp(mountInteraction);
 
     for (final mount in _mounts) {
       shiftMethod(mount);
@@ -137,7 +143,10 @@ class WheelPickerController {
   /// Shifts the wheel to the specified index, and records the interaction type.
   ///
   /// * This method is intended for internal use by the [WheelPicker] widget.
-  Future<void> _interactionShiftTo(int index, WheelPickerInteractionType interactionType) async {
+  Future<void> _interactionShiftTo(
+    int index,
+    WheelPickerInteractionType interactionType,
+  ) async {
     if (!_hasClients) return;
     _setInteractionType(interactionType);
     return await _shiftController(
@@ -151,7 +160,10 @@ class WheelPickerController {
   /// Shifts the wheel by a specified number of items, and records the interaction type.
   ///
   /// * This method is intended for internal use by the [WheelPicker] widget.
-  Future<void> _interactionShiftBy(int steps, WheelPickerInteractionType interactionType) async {
+  Future<void> _interactionShiftBy(
+    int steps,
+    WheelPickerInteractionType interactionType,
+  ) async {
     if (!_hasClients) return;
     _setInteractionType(interactionType);
     return await _shiftController(
@@ -165,14 +177,16 @@ class WheelPickerController {
   /// Shifts the wheel up by one item, and records the interaction type.
   ///
   /// * This method is intended for internal use by the [WheelPicker] widget.
-  Future<void> _interactionShiftUp(WheelPickerInteractionType interactionType) async {
+  Future<void> _interactionShiftUp(
+      WheelPickerInteractionType interactionType) async {
     return await _interactionShiftBy(-1, interactionType);
   }
 
   /// Shifts the wheel down by one item, and records the interaction type.
   ///
   /// * This method is intended for internal use by the [WheelPicker] widget.
-  Future<void> _interactionShiftDown(WheelPickerInteractionType interactionType) async {
+  Future<void> _interactionShiftDown(
+      WheelPickerInteractionType interactionType) async {
     return await _interactionShiftBy(1, interactionType);
   }
 
