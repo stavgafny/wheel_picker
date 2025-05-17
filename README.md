@@ -114,6 +114,27 @@ void main() => runApp(const MyApp());
 
 For more advanced usage, you can also mount controllers, making them shift each other. See [example](example/lib/main.dart).
 
+### Example: Listening for the scroll end event
+
+```dart
+const daysOfWeek = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+return NotificationListener(
+  onNotification: (notification) {
+    if (notification is ScrollEndNotification) {
+      print('User has ended scrolling');
+    }
+    return false;
+  },
+  child: WheelPicker(
+    itemCount: 7,
+    builder: (context, index) => Text(daysOfWeek[index]),
+    selectedIndexColor: Colors.orange,
+    looping: false,
+  ),
+);
+```
+
 <br />
 <br />
 
