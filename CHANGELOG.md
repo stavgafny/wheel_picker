@@ -45,5 +45,10 @@ Added support for updating `itemCount` and more control for moving between the w
 
 ## Version 0.2.1:
 
-- Refined naming for improved clarity.  
+- Refined naming for improved clarity.
 - Reformatted code to align with pub's static analysis standards.
+
+## Version 0.2.2
+
+- Lowered SDK constraints to support a wider range of Dart and Flutter versions.
+- Improved README: updated the basic example’s `onIndexChanged` usage and added an example showing how to listen for scroll end events.

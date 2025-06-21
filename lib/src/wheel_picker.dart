@@ -89,6 +89,7 @@ class WheelPicker extends StatefulWidget {
   ///
   /// Use this constructor to create a scrollable selection wheel with specific settings. You can define the appearance, behavior, and provide callbacks for user interaction.
   const WheelPicker({
+    Key? key,
     required this.builder,
     this.itemCount,
     this.controller,
@@ -99,7 +100,6 @@ class WheelPicker extends StatefulWidget {
     this.enableTap = true,
     this.onIndexChanged,
     this.style = const WheelPickerStyle(),
-    super.key,
   })  : assert(
           !(itemCount == null && controller == null),
           "Must have either itemCount or a controller",
@@ -111,7 +111,8 @@ class WheelPicker extends StatefulWidget {
         assert(
           !(initialIndex != null && controller != null),
           "Can't have both initialIndex and controller.",
-        );
+        ),
+        super(key: key);
 
   @override
   State<WheelPicker> createState() => _WheelPickerState();
