@@ -47,11 +47,7 @@ class _MyAppState extends State<MyApp> {
                   },
                 ),
               ),
-              Expanded(
-                child: Center(
-                  child: _selectedExample(context),
-                ),
-              ),
+              Expanded(child: Center(child: _selectedExample(context))),
             ],
           ),
         ),

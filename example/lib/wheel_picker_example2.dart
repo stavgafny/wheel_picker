@@ -58,7 +58,7 @@ class _WheelPickerExample2State extends State<WheelPickerExample2> {
                       controller: _infiniteWheel,
                       looping: false,
                       style: wheelStyle,
-                      selectedIndexColor: Colors.redAccent,
+                      selectedIndexColor: Colors.lightBlueAccent,
                       onIndexChanged: (index, interactionType) {
                         _printReportedPosition("infiniteWheel index: $index");
                       },
@@ -71,10 +71,11 @@ class _WheelPickerExample2State extends State<WheelPickerExample2> {
                       controller: _zeroToThousandWheel,
                       looping: false,
                       style: wheelStyle,
-                      selectedIndexColor: Colors.redAccent,
+                      selectedIndexColor: Colors.lightBlueAccent,
                       onIndexChanged: (index, interactionType) {
                         _printReportedPosition(
-                            "zeroToThousandWheel index: $index");
+                          "zeroToThousandWheel index: $index",
+                        );
                       },
                     ),
                   ),
