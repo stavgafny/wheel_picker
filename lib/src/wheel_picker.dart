@@ -49,7 +49,8 @@ part './wheel_picker_controller.dart';
 /// Simplify the process of creating scrollable selection wheels in Flutter, making it easier to build interactive and engaging user interfaces.
 class WheelPicker extends StatefulWidget {
   /// Callback for creating item widgets based on their index.
-  final Widget Function(BuildContext context, int index) builder;
+  /// If itemCount is null (unbounded), returning null here stops the scroll.
+  final Widget? Function(BuildContext context, int index) builder;
 
   /// The total number of items. This is used when no controller is provided.
   final int? itemCount;
@@ -65,6 +66,7 @@ class WheelPicker extends StatefulWidget {
   /// Whether the wheel should support infinite looping, allowing it to loop both forward and backward.
   ///
   /// Must be `true` for automatic shifting for mounted controllers.
+  /// Ignored if itemCount is null.
   final bool looping;
 
   /// Determines how the wheel is oriented and scrolled.
@@ -101,10 +103,6 @@ class WheelPicker extends StatefulWidget {
     this.onIndexChanged,
     this.style = const WheelPickerStyle(),
   })  : assert(
-          !(itemCount == null && controller == null),
-          "Must have either itemCount or a controller",
-        ),
-        assert(
           !(itemCount != null && controller != null),
           "Can't have both itemCount and controller.",
         ),
@@ -128,20 +126,14 @@ class _WheelPickerState extends State<WheelPicker> {
   /// Note that if a new controller is made, it also gets disposed within the widget's scope.
   late final WheelPickerController _controller = widget.controller ??
       WheelPickerController(
-        itemCount: widget.itemCount!,
+        itemCount: widget.itemCount,
         initialIndex:
             widget.initialIndex ?? WheelPickerController._defaultInitialIndex,
       );
 
-  /// Retrieves the range (item count) from the already initialized [_controller].
-  int _getRange() => _controller.itemCount;
-
   /// Attaches the controller to the widget, configuring looping and shift animation style.
   @override
   void initState() {
-    // Ensure itemCount is valid.
-    assert(_getRange() > 0, "itemCount can't be less or equal to zero.");
-
     // Attach the controller and configures its behavior.
     _controller._attach();
     _controller._updateShiftAnimationStyle(widget.style.shiftAnimationStyle);
@@ -157,7 +149,8 @@ class _WheelPickerState extends State<WheelPicker> {
     _controller._updateShiftAnimationStyle(widget.style.shiftAnimationStyle);
 
     // In the case the widget's itemCount property is given then update the internal controller's itemCount.
-    if (widget.itemCount != null && widget.itemCount != _controller.itemCount) {
+    if (widget.controller == null &&
+        widget.itemCount != _controller.itemCount) {
       _controller.itemCount = widget.itemCount!;
       // Also update the internal controller's current to its initialIndex.
       _controller.setCurrent(_controller.initialIndex);
@@ -177,11 +170,51 @@ class _WheelPickerState extends State<WheelPicker> {
 
   @override
   Widget build(BuildContext context) {
-    final range = _getRange();
+    final itemCount = _controller.itemCount;
 
-    Widget wheel = widget.looping
-        ? _loopingWheel(context, range)
-        : _nonLoopingWheel(context, range);
+    final int? childCount;
+    final int Function(int) calculateItemIndex;
+    if (itemCount == null) {
+      childCount = null;
+      calculateItemIndex = (int index) => index;
+    } else if (widget.looping) {
+      childCount = null;
+      calculateItemIndex = (int index) => index % itemCount;
+    } else {
+      childCount = itemCount;
+      calculateItemIndex = (int index) => index;
+    }
+
+    Widget wheel = ListWheelScrollView.useDelegate(
+      controller: _controller._scrollController,
+      itemExtent: widget.style.itemExtent,
+      physics: const FixedExtentScrollPhysics(),
+      diameterRatio: widget.style.diameterRatio,
+      squeeze: widget.style.squeeze,
+      overAndUnderCenterOpacity: widget.style.surroundingOpacity,
+      magnification: widget.style.magnification,
+      onSelectedItemChanged: (int index) {
+        _controller._update(index);
+        final itemIndex = calculateItemIndex(index);
+        widget.onIndexChanged?.call(itemIndex, _controller._interactionType);
+      },
+      childDelegate: ListWheelChildBuilderDelegate(
+        childCount: childCount,
+        builder: (context, index) {
+          final itemIndex = calculateItemIndex(index);
+          final child = widget.builder(context, itemIndex);
+          if (child == null) {
+            assert(itemCount == null,
+                'builder must only return null for dynamic wheels');
+            return null;
+          }
+          return _scrollDirectionWrapper(
+            rotateClockwise: true,
+            child: child,
+          );
+        },
+      ),
+    );
 
     wheel = _gestureDetectsWrapper(wheel: wheel, enableTap: widget.enableTap);
 
@@ -195,55 +228,6 @@ class _WheelPickerState extends State<WheelPicker> {
     );
 
     return wheel;
-  }
-
-  /// Factory method that updates possible [widget.controller] and calls possible [widget.onIndexChanged]
-  /// with the relative based on `index` and given `range`.
-  void Function(int)? _onIndexChangedMethodFactory(int range) {
-    return (int index) {
-      _controller._update(index);
-      widget.onIndexChanged?.call(index % range, _controller._interactionType);
-    };
-  }
-
-  /// Constructs a looping scroll wheel with items that are passed to a delegate with lazily built during layout.
-  Widget _loopingWheel(BuildContext context, int range) {
-    return ListWheelScrollView.useDelegate(
-      itemExtent: widget.style.itemExtent,
-      childDelegate: ListWheelChildBuilderDelegate(
-        builder: (context, index) => _scrollDirectionWrapper(
-          rotateClockwise: true,
-          child: widget.builder(context, index % range),
-        ),
-      ),
-      controller: _controller._scrollController,
-      onSelectedItemChanged: _onIndexChangedMethodFactory(range),
-      physics: const FixedExtentScrollPhysics(),
-      diameterRatio: widget.style.diameterRatio,
-      squeeze: widget.style.squeeze,
-      overAndUnderCenterOpacity: widget.style.surroundingOpacity,
-      magnification: widget.style.magnification,
-    );
-  }
-
-  /// Constructs a non looping scroll wheel with items that are passed to a delegate with lazily built during layout.
-  Widget _nonLoopingWheel(BuildContext context, int range) {
-    return ListWheelScrollView(
-      itemExtent: widget.style.itemExtent,
-      controller: _controller._scrollController,
-      onSelectedItemChanged: _onIndexChangedMethodFactory(range),
-      physics: const FixedExtentScrollPhysics(),
-      diameterRatio: widget.style.diameterRatio,
-      squeeze: widget.style.squeeze,
-      overAndUnderCenterOpacity: widget.style.surroundingOpacity,
-      magnification: widget.style.magnification,
-      children: List.generate(range, (index) {
-        return _scrollDirectionWrapper(
-          rotateClockwise: true,
-          child: widget.builder(context, index),
-        );
-      }),
-    );
   }
 
   /// Rotates child if [widget.scrollDirection] is horizontal.

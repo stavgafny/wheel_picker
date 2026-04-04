@@ -28,7 +28,7 @@ class WheelPickerController {
   static const _defaultInteractionType = WheelPickerInteractionType.drag;
 
   /// The total number of items in the wheel - (can be changed).
-  int itemCount;
+  int? itemCount;
 
   /// The initial selected item index.
   final int initialIndex;
@@ -71,7 +71,13 @@ class WheelPickerController {
         _current = initialIndex;
 
   /// Caps index to be ranging from 0 to `itemCount` - 1
-  int _capIndex(int index) => math.min(math.max(index, 0), itemCount - 1);
+  int _capIndex(int index) {
+    final itemCount = this.itemCount;
+    if (itemCount == null) {
+      return index;
+    }
+    return math.min(math.max(index, 0), itemCount - 1);
+  }
 
   /// Wether scroll controller is attached to a mounted widget.
   bool get _hasClients => _scrollController.hasClients;
@@ -106,6 +112,12 @@ class WheelPickerController {
   /// * This method is intended for internal use by the [WheelPicker] widget.
   void _update(int index) {
     if (!_hasClients) return;
+    final itemCount = this.itemCount;
+    if (itemCount == null) {
+      _current = index;
+      return;
+    }
+
     _current = index % itemCount;
     final currentCycle = (index / itemCount).floor();
     if (_previousCycle != currentCycle) {
