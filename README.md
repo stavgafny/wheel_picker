@@ -2,7 +2,7 @@
 
 A superset version of original [ListWheelScrollView](https://api.flutter.dev/flutter/widgets/ListWheelScrollView-class.html) for easily creating wheel scroll input.
 
-[![Flutter](https://img.shields.io/badge/Platform-Flutter-blue.svg)](https://flutter.dev/) [![Pub](https://img.shields.io/badge/pub-v-0.3.0orange.svg)](https://pub.dev/packages/wheel_picker)
+[![Flutter](https://img.shields.io/badge/Platform-Flutter-blue.svg)](https://flutter.dev/) [![Pub](https://img.shields.io/badge/pub-v0.4.0-orange.svg)](https://pub.dev/packages/wheel_picker)
 
 <div style="display: flex; flex-direction: row;">
     <img src="https://raw.githubusercontent.com/stavgafny/wheel_picker/main/doc/counter.gif" alt="Left Gif" width="30%">
@@ -14,6 +14,7 @@ A superset version of original [ListWheelScrollView](https://api.flutter.dev/flu
 - **Item Selection**: Retrieve the selected item index effortlessly.
 - **Highlight Selection**: Highlight selected items with a color shader.
 - **Tap Navigation**: Enable tap scrolls.
+- **Mouse Input**: Scroll with the mouse wheel or drag to select items.
 - **Horizontal Scroll Direction**: Horizontal wheel scroll view.
 - **Styling Flexibility**: Customize wheel appearance with `WheelPickerStyle`.
 - **Precise Control**: Manage and synchronize `WheelPicker` widgets with a `WheelPickerController`.
@@ -25,7 +26,7 @@ Add it to your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  wheel_picker: ^0.3.0
+  wheel_picker: ^0.4.0
 ```
 
 Install packages from the command line:

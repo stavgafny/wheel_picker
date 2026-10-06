@@ -79,3 +79,11 @@ This release contains the `WheelPicker` widget with `WheelPickerController` and 
 - **Performance Improvement**: Regular wheels with a large number of items now use a builder instead of `List.generate`.
 - **Non-breaking Change**: `itemCount` now allows `null` without breaking existing implementations.
 - **Examples**: Added a second example demonstrating switching logic with the infinite wheel and updated all examples to follow the newest Flutter SDK.
+
+---
+
+## 0.4.0 — Mouse Input Support (2026-10-06)
+
+- **New Feature**: Added support for mouse dragging while preserving the application's configured drag devices.
+- **Interaction Tracking**: Added `WheelPickerInteractionType.scroll` for mouse-wheel scrolling.
+- **Bug Fix**: Mouse-wheel scrolling now reports `scroll` instead of the previous interaction type in `onIndexChanged`, fixing [#10](https://github.com/stavgafny/wheel_picker/issues/10).
