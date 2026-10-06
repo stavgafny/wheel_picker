@@ -23,7 +23,7 @@ This release contains the `WheelPicker` widget with `WheelPickerController` and 
 
 ## 0.0.4 — Horizontal Scrolling Support (2023-12-25)
 
-- Added support for horizontal scrolling.
+- Added support for horizontal scrolling, addressing [#1](https://github.com/stavgafny/wheel_picker/issues/1).
 - **Breaking Change**: Removed `width` and `height` parameters.
 - **New Feature**: Introduced `size` parameter for specifying wheel size for both scroll directions.
 
@@ -31,7 +31,7 @@ This release contains the `WheelPicker` widget with `WheelPickerController` and 
 
 ## 0.0.5 — Controller Improvements (2024-07-04)
 
-- Added support for updating `itemCount` and more control for moving between the wheel.
+- Added support for updating `itemCount` and more control for moving between the wheel, addressing [#2](https://github.com/stavgafny/wheel_picker/issues/2).
 - Added controller's `.shiftTo` and `.setCurrent` methods.
 - `itemCount` can now be changed using the wheel picker controller or reactively through the wheel picker widget.
 
@@ -40,7 +40,7 @@ This release contains the `WheelPicker` widget with `WheelPickerController` and 
 ## 0.1.0 — Full Size Control (2024-08-09)
 
 - **Breaking Change**: The `size` property has been removed.
-- Developers now have full control over the widget's size and constraints. By default, the widget will take up as much space as possible.
+- Developers now have full control over the widget's size and constraints, addressing [#3](https://github.com/stavgafny/wheel_picker/issues/3) and [#4](https://github.com/stavgafny/wheel_picker/issues/4). By default, the widget will take up as much space as possible.
 - Updated the README to reflect the changes.
 
 ---
@@ -54,7 +54,7 @@ This release contains the `WheelPicker` widget with `WheelPickerController` and 
 
 ## 0.2.0 — Interaction Tracking (2024-12-29)
 
-- **New Feature**: Added support for tracking interaction types (`tap`, `drag`, `control`, `mounted`) during `onIndexChanged`.
+- **New Feature**: Added support for tracking interaction types (`tap`, `drag`, `control`, `mounted`) during `onIndexChanged`, addressing [#5](https://github.com/stavgafny/wheel_picker/issues/5).
 - Improved code structure and organization.
 
 ---
