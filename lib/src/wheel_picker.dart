@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import './wheel_picker_style.dart';
 
@@ -217,6 +218,7 @@ class _WheelPickerState extends State<WheelPicker> {
     );
 
     wheel = _gestureDetectsWrapper(wheel: wheel, enableTap: widget.enableTap);
+    wheel = _scrollInteractionWrapper(wheel: wheel);
 
     if (widget.selectedIndexColor != null) {
       wheel = _centerColorShaderMaskWrapper(wheel: wheel);
@@ -286,6 +288,36 @@ class _WheelPickerState extends State<WheelPicker> {
           child: wheel,
         );
       },
+    );
+  }
+
+  /// Enables mouse dragging and records mouse-wheel scroll interactions.
+  ///
+  /// Adds the mouse to the inherited [ScrollBehavior.dragDevices], preserving
+  /// support for the other input devices configured by the application.
+  /// Drag interactions are recorded by [_gestureDetectsWrapper].
+  ///
+  /// The [Listener] records [WheelPickerInteractionType.scroll] before Flutter
+  /// handles the pointer signal. [ListWheelScrollView] continues to handle
+  /// scrolling and snapping through its existing scroll physics.
+  Widget _scrollInteractionWrapper({required Widget wheel}) {
+    final scrollBehavior = ScrollConfiguration.of(context);
+
+    return ScrollConfiguration(
+      behavior: scrollBehavior.copyWith(
+        dragDevices: {
+          ...scrollBehavior.dragDevices,
+          PointerDeviceKind.mouse,
+        },
+      ),
+      child: Listener(
+        onPointerSignal: (event) {
+          if (event is PointerScrollEvent) {
+            _controller._setInteractionType(WheelPickerInteractionType.scroll);
+          }
+        },
+        child: wheel,
+      ),
     );
   }
 

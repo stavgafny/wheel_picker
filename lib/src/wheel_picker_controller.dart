@@ -3,11 +3,12 @@ part of './wheel_picker.dart';
 /// Represents the type of interaction with the WheelPicker that changes its index.
 ///
 /// The available types are:
-/// - [drag]: The index changes when the wheel is dragged by the user.
 /// - [tap]: The index changes when the user taps on the wheel.
+/// - [drag]: The index changes when the wheel is dragged by the user.
+/// - [scroll]: The index changes when the user scrolls with a mouse wheel.
 /// - [control]: The index changes programmatically through `WheelPickerController` methods.
 /// - [mount]: The index changes due to external mounting when the WheelPicker loops.
-enum WheelPickerInteractionType { drag, tap, control, mount }
+enum WheelPickerInteractionType { tap, drag, scroll, control, mount }
 
 /// Controller for managing and synchronizing `WheelPicker` widgets.
 ///
